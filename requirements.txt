@@ -1,0 +1,11 @@
+numpy
+pandas
+psychopy
+psychopy-sounddevice
+bleak
+SpeechRecognition
+google-api-core
+google-auth
+google-cloud
+google-cloud-speech
+googleapis-common-protos
