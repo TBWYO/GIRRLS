@@ -59,15 +59,18 @@ def settingsGUI():
     if dialog.OK:
         print("User entered:", default_values)
         misc.toFile('lastParams.pickle', default_values)
-
     else:
         print("User cancelled the dialog")
 
-settingsGUI();
-
+# Debug function to check variables and whatever else we need
 def debug():
     print("Resource Path:", resourcePath)
     print("Data Path:", dataPath)
     print("hostName:", hostName)
     print("Sound Device:", sound.Sound.__name__)
-#debug();
+# To run in debug mode run as python .\trial.py debug
+if len(sys.argv) == 2 and sys.argv[1] == 'debug':
+        debug();
+
+
+settingsGUI();
