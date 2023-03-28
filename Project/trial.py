@@ -29,6 +29,11 @@ monitor = "testMonitor"
 left_key = '1'
 right_key = '4'
 quit_key = 'q'
+#Test Keys
+simulateCorrect = "c"
+simulateIncorrect = "v"
+startMotor = "b"
+stopMotor = "n"
 
 # Variables from the original project, need to figure out what everything actually does
 num_disdaqs = 5 # Not sure what this is yet
@@ -90,6 +95,8 @@ default_values = settingsGUI();
 
 if default_values['Bluetooth'] == False:
     ser = serial.Serial(default_values['Com Port'], 9600, write_timeout = 3)
+
+##END OF CHANGES 
 
 def check_rand (in_array,num_array,num_row): #Cannot have more than 6 consecutive reward outcomes scheduled.
     counter = 0
