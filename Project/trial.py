@@ -1,5 +1,6 @@
 #!/usr/bin/python
 #Make sure to activate the virtual environment with .\env\scripts\activate
+# Requires Python 3.8.10
 import os
 import math
 import numpy as np
@@ -20,20 +21,20 @@ from psychopy import sound
 import psychopy_sounddevice
 
 # Set variables for paths we will be using, as well as other useful default_valuesrmation
-cwd = os.getcwd()
-resourcePath = (cwd + r"\Resources")
-dataPath = (cwd+r"\dataPath")
-hostName = socket.gethostname()
-monitor = "testMonitor"
+CWD = os.getcwd()
+RESOURCE_PATH = (CWD + r"\Resources")
+DATA_PATH = (CWD+r"\Datapath")
+HOST_NAME = socket.gethostname()
+TEST_MONITOR = "testMonitor"
 # Control keys
-left_key = '1'
-right_key = '4'
-quit_key = 'q'
+LEFT_KEY = '1'
+RIGHT_KEY = '4'
+QUIT_KEY = 'q'
 #Test Keys
-simulateCorrect = "c"
-simulateIncorrect = "v"
-startMotor = "b"
-stopMotor = "n"
+SIMULATE_CORRECT = "c"
+SIMULATE_INCORRECT = "v"
+START_MOTOR = "b"
+STOP_MOTOR = "n"
 
 # Variables from the original project, need to figure out what everything actually does
 num_disdaqs = 5 # Not sure what this is yet
@@ -60,8 +61,8 @@ def settingsGUI():
     default_values = {
         "Participant": "",
         "Date": data.getDateStr(),
-        "Computer": hostName,
-        "Com Port": "",
+        "Computer": HOST_NAME,
+        "Com Port": "4",
         "Fullscreen": False,
         "Bluetooth": False,
         "Test": False,
@@ -92,6 +93,27 @@ def settingsGUI():
         print("User cancelled the dialog")
         core.quit()
 default_values = settingsGUI();
+
+
+# Debug function to check variables and whatever else we need
+def debug():
+    print("="*50)
+    print("{:^50}".format("DEBUG STATEMENT"))
+    print("="*50)
+    print("{:<15}: {}".format("Resource Path", RESOURCE_PATH))
+    print("{:<15}: {}".format("Data Path", DATA_PATH))
+    print("{:<15}: {}".format("Host Name", HOST_NAME))
+    print("{:<15}: {}".format("Sound class", sound.Sound.__name__))
+    print("{:<15}: {}".format("Computer", default_values['Computer']))
+    print("{:<15}: {}".format("Participant", default_values['Participant']))
+    print("{:<15}: {}".format("Fullscreen", default_values['Fullscreen']))
+    print("{:<15}: {}".format("Test", default_values['Test']))
+    print("{:<15}: {}".format("Bluetooth", default_values['Bluetooth']))
+    print("{:<15}: {}".format("Com Port", default_values['Com Port']))
+# To run in debug mode run as python .\trial.py debug
+if len(sys.argv) == 2 and sys.argv[1] == 'debug':
+        debug();
+
 
 if default_values['Bluetooth'] == False:
     ser = serial.Serial(default_values['Com Port'], 9600, write_timeout = 3)
@@ -240,7 +262,7 @@ def show_fix(duration,start_time,measured_refresh):
 ##Basics for the experiment.
 #Window.
 wintype='pyglet' 
-win = visual.Window([1920,1080], fullscr=default_values['FullScreen'],monitor = "testMonitor", allowGUI = False, color = 'black', winType=wintype) #check window here
+win = visual.Window([1920,1080], fullscr=default_values['FullScreen'],monitor=TEST_MONITOR, allowGUI = False, color = 'black', winType=wintype) #check window here
 
 #Object, response, fix, and instruction stims.
 instruct = visual.TextStim(win, text='Text', alignText = 'center', anchorHoriz = 'center', height = 0.12, wrapWidth = 350, color = 'white')
@@ -249,20 +271,20 @@ left_choice = visual.Circle(win, radius = 0.3, lineColor = 'ForestGreen', lineWi
 right_choice = visual.Circle(win, radius = 0.3, lineColor = 'ForestGreen', lineWidth = 2.0, pos = [0.4,0])
 
 #Feedback stims.
-reward = visual.ImageStim(win, units = 'norm', size = [1,1], pos = [0,0], image = os.path.join(resourcePath,'reward.bmp'))
-zero = visual.ImageStim(win, units = 'norm', size = [1,1], pos = [0,0], image = os.path.join(resourcePath,'zero.bmp'))
+reward = visual.ImageStim(win, units = 'norm', size = [1,1], pos = [0,0], image = os.path.join(RESOURCE_PATH,'reward.bmp'))
+zero = visual.ImageStim(win, units = 'norm', size = [1,1], pos = [0,0], image = os.path.join(RESOURCE_PATH,'zero.bmp'))
 no_resp = visual.TextStim(win, text='No Response Detected!', height = 0.15, wrapWidth = 35, color = 'red')
 
 #Sounds.
-#corr_sound = sound.SoundPygame(value=os.path.join(resourcePath,'Stimuli/correct.ogg'))
-#incorr_sound = sound.SoundPygame(value=os.path.join(resourcePath,'Stimuli/incorrect.ogg'))
-#advance_sound = sound.SoundPygame(value=os.path.join(resourcePath,'Stimuli/click_quiet.ogg'))
+#corr_sound = sound.SoundPygame(value=os.path.join(RESOURCE_PATH,'Stimuli/correct.ogg'))
+#incorr_sound = sound.SoundPygame(value=os.path.join(RESOURCE_PATH,'Stimuli/incorrect.ogg'))
+#advance_sound = sound.SoundPygame(value=os.path.join(RESOURCE_PATH,'Stimuli/click_quiet.ogg'))
 
 #Rating stims.
-feedback_image = visual.ImageStim(win, units = 'norm', size = [1,1], pos = [0,0], image = os.path.join(resourcePath,'reward.bmp'))
+feedback_image = visual.ImageStim(win, units = 'norm', size = [1,1], pos = [0,0], image = os.path.join(RESOURCE_PATH,'reward.bmp'))
 rating_text = visual.TextStim(win, text = 'How Do You Feel Right Now?', pos = [0,0.5], height = 0.18, wrapWidth = 35, color = 'white')
-valence_rate = visual.ImageStim(win, units = 'cm', size = [22.44,6.42], pos = [0,-7.0], image = os.path.join(resourcePath,'valence2.bmp'))
-arousal_rate = visual.ImageStim(win, units = 'cm', size = [22.44,6.42], pos = [0,-7.0], image = os.path.join(resourcePath,'arousal2.bmp'))
+valence_rate = visual.ImageStim(win, units = 'cm', size = [22.44,6.42], pos = [0,-7.0], image = os.path.join(RESOURCE_PATH,'valence2.bmp'))
+arousal_rate = visual.ImageStim(win, units = 'cm', size = [22.44,6.42], pos = [0,-7.0], image = os.path.join(RESOURCE_PATH,'arousal2.bmp'))
 b0_choice = visual.Rect(win, units = 'cm', width = 3.5, height = 6.2, lineColor = 'ForestGreen', lineWidth = 4.0, pos = [-9.4,-7.0])
 b1_choice = visual.Rect(win, units = 'cm', width = 3.5, height = 6.2, lineColor = 'ForestGreen', lineWidth = 4.0, pos = [-4.8,-7.0])
 b2_choice = visual.Rect(win, units = 'cm', width = 3.5, height = 6.2, lineColor = 'ForestGreen', lineWidth = 4.0, pos = [-0.2,-7.0])
@@ -341,7 +363,7 @@ for i in range(20):
 
 #Shuffle bitmaps so images used as stims A, B, C, etc. vary across subjects.
 
-pic_list = [os.path.join(resourcePath,'1.bmp'), os.path.join(resourcePath,'2.bmp'), os.path.join(resourcePath,'3.bmp'), os.path.join(resourcePath,'4.bmp'), os.path.join(resourcePath,'5.bmp'), os.path.join(resourcePath,'6.bmp')]
+pic_list = [os.path.join(RESOURCE_PATH,'1.bmp'), os.path.join(RESOURCE_PATH,'2.bmp'), os.path.join(RESOURCE_PATH,'3.bmp'), os.path.join(RESOURCE_PATH,'4.bmp'), os.path.join(RESOURCE_PATH,'5.bmp'), os.path.join(RESOURCE_PATH,'6.bmp')]
 np.random.shuffle(pic_list) 
 
 stim_A = pic_list[0]
@@ -356,7 +378,7 @@ stim_B = pic_list[5]
 stim_rand = {'stim_A':pic_list[0], 'stim_C':pic_list[1], 'stim_E':pic_list[2], 'stim_F':pic_list[3], 'stim_D':pic_list[4], 'stim_B':pic_list[5]}
 
 df = pd.DataFrame(stim_rand.items())
-df.to_csv(os.path.join(dataPath,'%s_PST_stim_rand.csv'%(default_values['Participant'])), header=False, index=False)
+df.to_csv(os.path.join(DATA_PATH,'%s_PST_stim_rand.csv'%(default_values['Participant'])), header=False, index=False)
 #df.to_csv(default_values['participant']+'_PST_stim_rand.csv', header=False, index=False)
 
 #Clocks.
@@ -367,7 +389,7 @@ fMRI_clock = core.Clock()
 #File to collect training data. 
 
 #train_file = default_values['participant'] + '_' + default_values['Date']
-train_file = os.path.join(dataPath, '%s_%s_PST_fMRI_train.csv'%(default_values['Participant'], default_values['Date']))
+train_file = os.path.join(DATA_PATH, '%s_%s_PST_fMRI_train.csv'%(default_values['Participant'], default_values['Date']))
 trainFile = open(train_file, 'w')
 trainFile.write('block,trial_num,left_stim,left_stim_number,right_stim,right_stim_number,object_onset,'+
                 'object_duration,response,response_onset,trial_RT,accuracy,isi_onset,isi_duration,scheduled_outcome,'+
@@ -388,15 +410,15 @@ for i in range(len(inst_text)):
         instruct.setText(text = inst_text[i]) 
         instruct.draw()
         win.flip()
-        allKeys = event.waitKeys(keyList = [left_key, quit_key])
+        allKeys = event.waitKeys(keyList = [LEFT_KEY, QUIT_KEY])
         resp = allKeys[0][0]
 
-        if resp == left_key:
+        if resp == LEFT_KEY:
             #advance_sound.play()
             advance = 'true'
             allKeys = []
 
-        elif resp == quit_key:
+        elif resp == QUIT_KEY:
             #advance_sound.play()
             core.quit()
 
@@ -535,17 +557,17 @@ for block in range(num_blocks):
             right_stim.draw()
             fix.draw()
             win.flip()
-            allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+            allKeys=event.getKeys(keyList = [LEFT_KEY,RIGHT_KEY,QUIT_KEY], timeStamped=RT)
 
             if allKeys:
                 resp = allKeys[0][0]
                 trial_RT=allKeys[0][1]
                 #advance_sound.play()
 
-                if resp == quit_key:
+                if resp == QUIT_KEY:
                     core.quit()
 
-                elif resp == left_key:
+                elif resp == LEFT_KEY:
                     response = 'left'
                     trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime())
                     isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh)
@@ -556,7 +578,7 @@ for block in range(num_blocks):
                     iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh)
                     stim_frameN = int(math.floor(3000/refresh))
 
-                elif resp == right_key:
+                elif resp == RIGHT_KEY:
                     response = 'right'
                     trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime())
                     isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh)
@@ -612,15 +634,15 @@ for block in range(num_blocks):
             while advance == 'false':
                 instruct.draw()
                 win.flip()
-                allKeys = event.waitKeys(keyList = [left_key,quit_key])
+                allKeys = event.waitKeys(keyList = [LEFT_KEY,QUIT_KEY])
                 resp = allKeys[0][0]
 
-                if resp == left_key:
+                if resp == LEFT_KEY:
                     advance = 'true'
                     #advance_sound.play()
                     allKeys = []
 
-                elif resp == quit_key:
+                elif resp == QUIT_KEY:
                     core.quit()
 
     #Update the block count.
@@ -645,7 +667,7 @@ for i in range(len(rate_text)):
         instruct.setText(text=rate_text[i])
         instruct.draw()
         win.flip()
-        allKeys = event.waitKeys(keyList=[b1,quit_key])
+        allKeys = event.waitKeys(keyList=[b1,QUIT_KEY])
 
         if allKeys:
             resp = allKeys[0][0]
@@ -673,7 +695,7 @@ for i in range(len(valence_rate_inst)):
         instruct.setText(text=valence_rate_inst[i])
         instruct.draw()
         win.flip()
-        allKeys=event.waitKeys(keyList=[b1,quit_key])
+        allKeys=event.waitKeys(keyList=[b1,QUIT_KEY])
 
         if allKeys:
             resp = allKeys[0][0]
@@ -712,7 +734,7 @@ for i in range(len(outcome_list)):
     rate_frameN = 0
     advance = 'false'
 
-    feedback_image.setImage(value=os.path.join(resourcePath, outcome_list[i]))
+    feedback_image.setImage(value=os.path.join(RESOURCE_PATH, outcome_list[i]))
 
     if outcome_list[i] == 'reward.bmp':
         outcome = 'reward'
@@ -829,7 +851,7 @@ for i in range(len(arousal_rate_inst)):
         instruct.setText(text=arousal_rate_inst[i])
         instruct.draw()
         win.flip()
-        allKeys=event.waitKeys(keyList=[b1,quit_key])
+        allKeys=event.waitKeys(keyList=[b1,QUIT_KEY])
 
         if allKeys:
             resp = allKeys[0][0]
@@ -964,22 +986,3 @@ for i in range(len(outcome_list)):
 #Close the rating file.
 
 PST_Rate_Data_File.close()
-
-# Debug function to check variables and whatever else we need
-def debug():
-    print("="*50)
-    print("{:^50}".format("DEBUG STATEMENT"))
-    print("="*50)
-    print("{:<15}: {}".format("Resource Path", resourcePath))
-    print("{:<15}: {}".format("Data Path", dataPath))
-    print("{:<15}: {}".format("Host Name", hostName))
-    print("{:<15}: {}".format("Sound class", sound.Sound.__name__))
-    print("{:<15}: {}".format("Computer", default_values['Computer']))
-    print("{:<15}: {}".format("Participant", default_values['Participant']))
-    print("{:<15}: {}".format("Fullscreen", default_values['Fullscreen']))
-    print("{:<15}: {}".format("Test", default_values['Test']))
-    print("{:<15}: {}".format("Bluetooth", default_values['Bluetooth']))
-    print("{:<15}: {}".format("Com Port", default_values['Com Port']))
-# To run in debug mode run as python .\trial.py debug
-if len(sys.argv) == 2 and sys.argv[1] == 'debug':
-        debug();
