@@ -12,7 +12,7 @@ The GIRRLS Project is a collaboration between Central Wyoming College and Univer
 
 ### Python Game
 
-To run the probability task, you will need to have Python 3.8.10 installed on your computer. You can download Python 3.8.10 from the official website and install the required libraries using the following command from the root directory:
+To run the probability task, you will need to have Python 3.8.10 installed on your computer. You can download Python 3.8.10 from the official website and install the required libraries using the following command from the (project's) root directory:
 ```
 pip install -r requirements.txt
 ```
