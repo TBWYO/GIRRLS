@@ -12,7 +12,10 @@ To run the probability task, you will need to have Python 3.8.10 installed on yo
 ```
 pip install -r requirements.txt
 ```
-### Arduino Integrated Development Enviroment (IDE)
+
+### Arduino Electronics
+
+To flash your nrf52832 with our code you need to have the arduino IDE installed with the proper board manager and COM port set.
 
 Download the 1.8.2 version of the Arduino Integrated Development Environment (IDE) software.
 
@@ -42,11 +45,6 @@ Recompile the code and upload it to the board.
 Test the code to ensure it's working properly.
 
 That's it! The steps may seem complicated, but with persistence and some patience, you can get your board up and running in no time.
-
-
-### Arduino Electronics
-
-To flash your nrf52832 with our code you need to have the arduino IDE installed with the proper board manager and COM port set. More detailed instructions will be available as the project progresses. Until then you are on your own.
 
 ### 3D Printable Chasis
 
