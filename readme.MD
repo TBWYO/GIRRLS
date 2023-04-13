@@ -1,10 +1,17 @@
 
 # Candy Machine Probability Project 
 
+
 The GIRRLS Project is a collaboration between Central Wyoming College and University of Wyoming. The project consists of three (3) parts, 
 1) The Python Game 
 2) The arduino electronics
 3) The 3D printable chasis
+
+### Briefly descrition of how it should work:
+
+1) A child plays a game coded in Python.
+2) When a child wins and thus launches the reward response, the Python will send a signal to the arduino device and activate the motor.
+3) When a child places a hand between the first pair of sensors, the hand will break the infrared beam which will stop the motor.
 
 ### Python Game
 
