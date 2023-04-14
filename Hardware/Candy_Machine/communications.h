@@ -7,4 +7,5 @@ void WriteOnSerial (int SendOnSerial);
 void EstablishConnectionToSoftware ();
 void readSerial();
 void processIncomingQueue();
+bool ResetToggle ();
 #endif

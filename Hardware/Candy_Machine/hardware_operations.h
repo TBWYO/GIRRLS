@@ -9,4 +9,5 @@ void MotorMovePrimaryDispense (int StepsToMove);
 void ControlMotor (char parameter);
 bool IsCandyDispensed (); 
 bool IsCandyTaken ();
+void Restart ();
 #endif

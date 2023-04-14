@@ -1,24 +1,37 @@
 #include <Arduino.h>
-
 #include "hardware_operations.h"
 // -------------------------------------------------------------------------------------------- //
-/* The following constants are derived from the ID10T protocal
- * The protocal uses 3 bytes to communicate {(ID)(CMD)(PARAM)} -- ID, Command, Parameter
- * Every command recieves needs an acknowledgement sent to the program.
- * Acknowledgements are structued thusly; {(ID)
-*/
+//Serial Paramaters
 #define SERIAL_BAUD_RATE 9600
-#define ESTABLISH_CONNECTION 0x45 // Value sent from python program to establish communications (capitol "E")
-#define DISPENSE_ACTIVATE_COMMAND 0x49 // Capital 'I'
-// #define MOTOR_ROTATE_TRUE 0X44 // Capital "D" If 'D' rotate, else nothing (not used here, present for completeness)
-#define COMMAND_ACKNOWLEDGED 0x54 //Capital 'T'
+// ID10T Commands Types
+#define TRANS_TYPE_COMMAND 0x7e // The command trans type is denoted by a Tilde '~'
+#define TRANS_TYPE_ACKNOWLEDGE 0x40 //The acknowledge trans type is denoted by an "AT" symbol '@'
+#define TRANS_TYPE_EVENT 0x25 //The event trans type is denoted by a percent '%'
+// ID10T Commands
+#define ESTABLISH_CONNECTION 0X45 // This command is denoted by a capital 'E' 
+#define DISPENSING_CANDY 0x49 // This command is denoted by a capital 'I' 
+#define RESET 0x51 // This command is denoted by a capital 'Q' 
+// ID10T Acknowledgements
+#define CONNECTION_ESTABLISHED [0x40,0X65,0x73] // This ACK is denoted by a lowercase 'e'
+#define DISPENSING_CANDY [0x40,0X69,0x79] // This ACK is denoted by a lowercase 'i'
+#define RESETTING [0x40,0X71,0x44] // This ACK is denoted by a lowercase 'q'
+// ID10T Buffer Constants
 #define SERIAL_INCOMING_BUFFER_SIZE 64
-#define COMMAND_INDICATOR_BYTE 0x7E // Tilde '~'
-// -------------------------------------------------------------------------------------------- //
+// ID10T Buffer Integers
 char serialIncomingQueue[SERIAL_INCOMING_BUFFER_SIZE];
 int serialIncomingQueueFillAmt = 0; // How much is available to read
 int serialIncomingReadPointer = 0; // Index in queue to start read (circular buffer)
 int serialIncomingWritePointer = 0; // Index where to write next byte
+
+int ResetNow = 0; 
+// -------------------------------------------------------------------------------------------- //
+bool ResetToggle () {
+  if (ResetNow = RESET) {
+    return true
+  } else {
+    return false
+  } 
+}
 // -------------------------------------------------------------------------------------------- //
 void SetUpCommunications () {
   // Set up Serial
@@ -105,13 +118,18 @@ void processIncomingQueue() {
   if (serialIncomingQueueFillAmt > 2) { // Having anything more than 2 means we have enough to pull a 3 byte command.
     // Check if first byte in queue indicates a command type (if not, throw it out and don't process more until next time processIncomingQueue is called)
     char byteRead = pullByteOffQueue();
-    if (byteRead == COMMAND_INDICATOR_BYTE) {
+    if (byteRead == TRANS_TYPE_COMMAND) {
       // Check if next byte matches command indicator (if it does ignore byte and pull next)
       byteRead = pullByteOffQueue();
-      if (byteRead == COMMAND_INDICATOR_BYTE) {
+      if (byteRead == TRANS_TYPE_COMMAND) {
         byteRead = pullByteOffQueue();
-      }
-
+      } 
+      } else if (byteRead == TRANS_TYPE_ACKNOWLEDGE){
+        // Check if next byte matches command indicator (if it does ignore byte and pull next)
+        byteRead = pullByteOffQueue();
+        if (byteRead == TRANS_TYPE_ACKNOWLEDGE) {
+        byteRead = pullByteOffQueue();
+      } 
       // Make sure there is still a possible parameter byte
       if (serialIncomingQueueFillAmt > 0) {
         // Then see if byte matches command id; if not double bytes and do nothing until next time processIncomingQueue is called
@@ -121,12 +139,20 @@ void processIncomingQueue() {
             byteRead = pullByteOffQueue();
             
             // Call command specific function while passing parameter byte
-            WriteOnSerial(COMMAND_ACKNOWLEDGED);
+            WriteOnSerial(DISPENSING_CANDY);
             ControlMotor (byteRead);
           break;
+          case RESET:
+
+            byteRead = pullByteOffQueue();
+            WriteOnSerial (RESETTING)
+            int ResetNow = Reset;
+          break;
+          case 
         
         }
       }
     }
   }
 }
+// -------------------------------------------------------------------------------------------- //

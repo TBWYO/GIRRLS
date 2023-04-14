@@ -1,8 +1,8 @@
 #include <Arduino.h> 
 #include <Adafruit_MotorShield.h> // Need to get appropriate library if new arduino install
-#include "hardware_operations.h" 
-
+#include "hardware_operations.h"
 #define PIN_LED_FAIL   17
+#define PIN_RESET 35
 #define PIN_CANDY_DISPENSE_DETECT 27 // Beambreaker collector port
 #define PIN_USER_EXTRACTION_DETECT 7 // Beambreaker collector port
 #define MOTOR_PRIMARY_DISPENSE_SPEED 20 // 0 TO 255 Valid
@@ -25,6 +25,9 @@ void SetFailLed(bool setLedOn) {
 void SetUpHardware () {
   //configure the led
   pinMode(PIN_LED_FAIL, OUTPUT);
+
+  //configure reset
+  pinMode(PIN_RESET, OUTPUT);
 
   // Configuring the motor
   if (!AFMS.begin()) {         // create with the default frequency 1.6KHz
@@ -64,5 +67,9 @@ bool IsCandyTaken () {
     } else {
       return false;
     }
+}
+// -------------------------------------------------------------------------------------------- //
+void Restart () {
+    digitalWrite(PIN_RESET, HIGH);
 }
 // -------------------------------------------------------------------------------------------- //

@@ -17,20 +17,23 @@ void setup() {
 // -------------------------------------------------------------------------------------------- //
 void loop() {
   // put your main code here, to run repeatedly:
-  readSerial();
-  processIncomingQueue();
+  while (ResetToggle() = false) {
+    readSerial();
+    processIncomingQueue();
 
-  /* Old Code set to be replaced
-  if (WatchForCandyDispensed && IsCandyDispensed ()) {
-    WatchForCandyDispensed = false;
-    WriteOnSerial(CANDY_DISPENSED_RESPONSE); 
-    WatchForCandyTaken = true;
-  }
+      /* Old Code set to be replaced
+    if (WatchForCandyDispensed && IsCandyDispensed ()) {
+      WatchForCandyDispensed = false;
+      WriteOnSerial(CANDY_DISPENSED_RESPONSE); 
+      WatchForCandyTaken = true;
+    }
 
-  if (WatchForCandyTaken == true && IsCandyTaken()) {
-    WatchForCandyTaken = false;
-    WriteOnSerial(CANDY_TAKEN_RESPONSE); 
-  }
-  */
+    if (WatchForCandyTaken == true && IsCandyTaken()) {
+      WatchForCandyTaken = false;
+      WriteOnSerial(CANDY_TAKEN_RESPONSE); 
+    }
+      */
+}
+  Restart();
 }
 // -------------------------------------------------------------------------------------------- //
