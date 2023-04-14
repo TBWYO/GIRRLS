@@ -25,7 +25,7 @@ int serialIncomingWritePointer = 0; // Index where to write next byte
 
 int ResetNow = 0; 
 // -------------------------------------------------------------------------------------------- //
-bool ResetToggle () {
+bool ResetToggle () {   // When true, the machine will reset itself
   if (ResetNow = RESET) {
     return true
   } else {
@@ -33,16 +33,17 @@ bool ResetToggle () {
   } 
 }
 // -------------------------------------------------------------------------------------------- //
-void SetUpCommunications () {
+void SetUpCommunications () {   // set up the serial library at baud defined, wait for serial to initilize 
   // Set up Serial
-  Serial.begin(SERIAL_BAUD_RATE);           // set up the serial library at baud defined
+  Serial.begin(SERIAL_BAUD_RATE);
+  // Wait for Serial           
   while (!Serial) {
     SetFailLed(true);
   }
   SetFailLed(false);
 }
 // -------------------------------------------------------------------------------------------- //
-int ListenOnSerial () {
+int ListenOnSerial () {   // Listen on Serial fallback for Buffer
   int incomingByte = 0;
   if (Serial.available() > 0) {
     // read the incoming byte:
@@ -52,11 +53,11 @@ int ListenOnSerial () {
   return incomingByte;
 }
 // -------------------------------------------------------------------------------------------- //
-void WriteOnSerial (int SendOnSerial) {
+void WriteOnSerial (int SendOnSerial) {   // Output to the Serial BUS
   Serial.write(SendOnSerial);
 }
 // -------------------------------------------------------------------------------------------- //
-bool IsConnectionEstablished() {
+bool IsConnectionEstablished() {    // Determine if there is a program to talk to
   if (ListenOnSerial() == ESTABLISH_CONNECTION) {
     return true;
     } else {
@@ -64,7 +65,7 @@ bool IsConnectionEstablished() {
   }
 }
 // -------------------------------------------------------------------------------------------- //
-void EstablishConnectionToSoftware () {
+void EstablishConnectionToSoftware () { // Wait for a program to talk to
   while (IsConnectionEstablished() == false) {
     IsConnectionEstablished();
     SetFailLed(true);
@@ -72,7 +73,7 @@ void EstablishConnectionToSoftware () {
   SetFailLed(false);
 }
 // -------------------------------------------------------------------------------------------- //
-void readSerial() {
+void readSerial() { // Generat a circular buffer to store incoming comamnds for later interpretation
   int bytesToRead = Serial.available();
   if (bytesToRead > 0) {
     // Dump each byte to queue
@@ -96,7 +97,7 @@ void readSerial() {
   }
 }
 // -------------------------------------------------------------------------------------------- //
-char pullByteOffQueue() {
+char pullByteOffQueue() {   //read the bytes on the buffer
   // Note that this function is not verifying bytes exist before pulling so you MUST be sure there is a usable byte BEFORE calling this function
   char returnValue = serialIncomingQueue[serialIncomingReadPointer];
 
@@ -112,7 +113,7 @@ char pullByteOffQueue() {
   return returnValue;
 }
 // -------------------------------------------------------------------------------------------- //
-void processIncomingQueue() {
+void processIncomingQueue() {   //interpret the byte pulled from the cue and execute the command
   // Pull off a single command from the queue if command has enough bytes.
   // For simplicity sake, all commands will be a total of 3 bytes (indicating command type, command id, command parameter)
   if (serialIncomingQueueFillAmt > 2) { // Having anything more than 2 means we have enough to pull a 3 byte command.
