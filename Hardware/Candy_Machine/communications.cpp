@@ -2,12 +2,12 @@
 
 #include "hardware_operations.h"
 // -------------------------------------------------------------------------------------------- //
-#define SERIAL_BAUD_RATE 9600
 /* The following constants are derived from the ID10T protocal
  * The protocal uses 3 bytes to communicate {(ID)(CMD)(PARAM)} -- ID, Command, Parameter
  * Every command recieves needs an acknowledgement sent to the program.
  * Acknowledgements are structued thusly; {(ID)
 */
+#define SERIAL_BAUD_RATE 9600
 #define ESTABLISH_CONNECTION 0x45 // Value sent from python program to establish communications (capitol "E")
 #define DISPENSE_ACTIVATE_COMMAND 0x49 // Capital 'I'
 // #define MOTOR_ROTATE_TRUE 0X44 // Capital "D" If 'D' rotate, else nothing (not used here, present for completeness)

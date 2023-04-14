@@ -26,6 +26,7 @@ void loop() {
   readSerial();
   processIncomingQueue();
 
+  /* Old Code set to be replaced
   if (WatchForCandyDispensed && IsCandyDispensed ()) {
     WatchForCandyDispensed = false;
     WriteOnSerial(CANDY_DISPENSED_RESPONSE); 
@@ -36,5 +37,6 @@ void loop() {
     WatchForCandyTaken = false;
     WriteOnSerial(CANDY_TAKEN_RESPONSE); 
   }
+  */
 }
 // -------------------------------------------------------------------------------------------- //
