@@ -28,6 +28,7 @@ void SetUpHardware () {
 
   //configure reset
   pinMode(PIN_RESET, OUTPUT);
+  digitalWrite(PIN_RESET, LOW);
 
   // Configuring the motor
   if (!AFMS.begin()) {         // create with the default frequency 1.6KHz

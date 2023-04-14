@@ -7,17 +7,16 @@ bool WatchForCandyTaken = false;
 void setup() {
     // set up communications
   SetUpCommunications();
-  
-  // wait for software initialization
+    //Determine if the python program is present
   EstablishConnectionToSoftware ();
-  
   // set up hardware:
   SetUpHardware();
 }
 // -------------------------------------------------------------------------------------------- //
+
 void loop() {
   // put your main code here, to run repeatedly:
-  while (ResetToggle() = false) {
+  if (ResetToggle() == false) { 
     readSerial();
     processIncomingQueue();
 
@@ -33,7 +32,8 @@ void loop() {
       WriteOnSerial(CANDY_TAKEN_RESPONSE); 
     }
       */
-}
+} else {
   Restart();
+}
 }
 // -------------------------------------------------------------------------------------------- //

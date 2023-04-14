@@ -4,17 +4,19 @@
 //Serial Paramaters
 #define SERIAL_BAUD_RATE 9600
 // ID10T Commands Types
-#define TRANS_TYPE_COMMAND 0x7e // The command trans type is denoted by a Tilde '~'
+#define TRANS_TYPE_COMMAND 0x7E // The command trans type is denoted by a Tilde '~'
 #define TRANS_TYPE_ACKNOWLEDGE 0x40 //The acknowledge trans type is denoted by an "AT" symbol '@'
 #define TRANS_TYPE_EVENT 0x25 //The event trans type is denoted by a percent '%'
 // ID10T Commands
 #define ESTABLISH_CONNECTION 0X45 // This command is denoted by a capital 'E' 
-#define DISPENSING_CANDY 0x49 // This command is denoted by a capital 'I' 
+#define DISPENSE_CANDY 0x49 // This command is denoted by a capital 'I' 
 #define RESET 0x51 // This command is denoted by a capital 'Q' 
+//ID10T Parameters
+#define ESTABLISH_CONNECTION_SERIAL 0x42 // This parameter determines that communications will occur over Serial.
 // ID10T Acknowledgements
-#define CONNECTION_ESTABLISHED [0x40,0X65,0x73] // This ACK is denoted by a lowercase 'e'
-#define DISPENSING_CANDY [0x40,0X69,0x79] // This ACK is denoted by a lowercase 'i'
-#define RESETTING [0x40,0X71,0x44] // This ACK is denoted by a lowercase 'q'
+#define CONNECTION_ESTABLISHED 0X65 // This ACK is denoted by a lowercase 'e'
+#define DISPENSING_CANDY 0X69 // This ACK is denoted by a lowercase 'i'
+#define RESETTING 0X71 // This ACK is denoted by a lowercase 'q'
 // ID10T Buffer Constants
 #define SERIAL_INCOMING_BUFFER_SIZE 64
 // ID10T Buffer Integers
@@ -23,14 +25,25 @@ int serialIncomingQueueFillAmt = 0; // How much is available to read
 int serialIncomingReadPointer = 0; // Index in queue to start read (circular buffer)
 int serialIncomingWritePointer = 0; // Index where to write next byte
 
-int ResetNow = 0; 
+int ResetNow = 0;
+int CommsEstablishedSerial = 0;
+int CommandEnable = 0;
+int AcknowledgeEnable = 0; 
 // -------------------------------------------------------------------------------------------- //
 bool ResetToggle () {   // When true, the machine will reset itself
-  if (ResetNow = RESET) {
-    return true
+  if (ResetNow == RESET) {
+    return true;
   } else {
-    return false
+    return false;
   } 
+}
+// -------------------------------------------------------------------------------------------- //
+bool IsConnectionEstablished() {    // Determine if there is a program to talk to
+  if (CommsEstablishedSerial == ESTABLISH_CONNECTION_SERIAL) {
+    return true;
+    } else {
+      return false;
+  }
 }
 // -------------------------------------------------------------------------------------------- //
 void SetUpCommunications () {   // set up the serial library at baud defined, wait for serial to initilize 
@@ -55,24 +68,10 @@ int ListenOnSerial () {   // Listen on Serial fallback for Buffer
 // -------------------------------------------------------------------------------------------- //
 void WriteOnSerial (int SendOnSerial) {   // Output to the Serial BUS
   Serial.write(SendOnSerial);
+
 }
 // -------------------------------------------------------------------------------------------- //
-bool IsConnectionEstablished() {    // Determine if there is a program to talk to
-  if (ListenOnSerial() == ESTABLISH_CONNECTION) {
-    return true;
-    } else {
-      return false;
-  }
-}
-// -------------------------------------------------------------------------------------------- //
-void EstablishConnectionToSoftware () { // Wait for a program to talk to
-  while (IsConnectionEstablished() == false) {
-    IsConnectionEstablished();
-    SetFailLed(true);
-  }
-  SetFailLed(false);
-}
-// -------------------------------------------------------------------------------------------- //
+
 void readSerial() { // Generat a circular buffer to store incoming comamnds for later interpretation
   int bytesToRead = Serial.available();
   if (bytesToRead > 0) {
@@ -113,6 +112,22 @@ char pullByteOffQueue() {   //read the bytes on the buffer
   return returnValue;
 }
 // -------------------------------------------------------------------------------------------- //
+bool TransTypeCommand () {
+  if (CommandEnable == 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+// -------------------------------------------------------------------------------------------- //
+bool TransTypeAcknowledge () {
+  if (AcknowledgeEnable == 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+// -------------------------------------------------------------------------------------------- //
 void processIncomingQueue() {   //interpret the byte pulled from the cue and execute the command
   // Pull off a single command from the queue if command has enough bytes.
   // For simplicity sake, all commands will be a total of 3 bytes (indicating command type, command id, command parameter)
@@ -120,40 +135,64 @@ void processIncomingQueue() {   //interpret the byte pulled from the cue and exe
     // Check if first byte in queue indicates a command type (if not, throw it out and don't process more until next time processIncomingQueue is called)
     char byteRead = pullByteOffQueue();
     if (byteRead == TRANS_TYPE_COMMAND) {
-      // Check if next byte matches command indicator (if it does ignore byte and pull next)
+      CommandEnable = 1;
+      AcknowledgeEnable = 0;
+    } else {
+      byteRead = 0;
+      CommandEnable = 0;
+    }
+
+    if (TransTypeCommand() == true) {
       byteRead = pullByteOffQueue();
-      if (byteRead == TRANS_TYPE_COMMAND) {
-        byteRead = pullByteOffQueue();
-      } 
-      } else if (byteRead == TRANS_TYPE_ACKNOWLEDGE){
-        // Check if next byte matches command indicator (if it does ignore byte and pull next)
-        byteRead = pullByteOffQueue();
-        if (byteRead == TRANS_TYPE_ACKNOWLEDGE) {
-        byteRead = pullByteOffQueue();
-      } 
-      // Make sure there is still a possible parameter byte
+      switch(byteRead) {
+        case ESTABLISH_CONNECTION:
+          byteRead = pullByteOffQueue();
+          if (byteRead = ESTABLISH_CONNECTION_SERIAL) {
+            CommsEstablishedSerial = ESTABLISH_CONNECTION_SERIAL;
+            WriteOnSerial(TRANS_TYPE_COMMAND);
+            WriteOnSerial(CONNECTION_ESTABLISHED);
+            WriteOnSerial(byteRead);
+            Serial.print("\n");
+          }
+          break;
+
+        case DISPENSE_CANDY:
+          byteRead = pullByteOffQueue();
+          WriteOnSerial(TRANS_TYPE_COMMAND);
+          WriteOnSerial(DISPENSING_CANDY);
+          ControlMotor(byteRead);
+          WriteOnSerial(byteRead);
+          Serial.print("\n");
+        break;
+
+        case RESET:
+          byteRead = pullByteOffQueue();
+          WriteOnSerial(TRANS_TYPE_COMMAND);
+          WriteOnSerial(RESETTING);
+          Restart();
+
+      }
+    } else if (TransTypeAcknowledge() == true) {
+      byteRead = pullByteOffQueue();
+       //switch(byteRead) {
+        //WriteOnSerial(0x49);
+    
+    }
+
+       //Make sure there is still a possible parameter byte
       if (serialIncomingQueueFillAmt > 0) {
         // Then see if byte matches command id; if not double bytes and do nothing until next time processIncomingQueue is called
-        switch (byteRead) {
-          case DISPENSE_ACTIVATE_COMMAND: // Controls the motor movement
-            // Pull 3rd byte for command that can be use as specific parameters
-            byteRead = pullByteOffQueue();
-            
-            // Call command specific function while passing parameter byte
-            WriteOnSerial(DISPENSING_CANDY);
-            ControlMotor (byteRead);
-          break;
-          case RESET:
-
-            byteRead = pullByteOffQueue();
-            WriteOnSerial (RESETTING)
-            int ResetNow = Reset;
-          break;
-          case 
-        
-        }
+          
       }
-    }
   }
+}
+// -------------------------------------------------------------------------------------------- //
+void EstablishConnectionToSoftware () { // Wait for a program to talk to
+  while (IsConnectionEstablished() == false) {
+    readSerial(); //listen on serial for the establish comms command from program
+    processIncomingQueue(); //determine what was send over Serial
+    SetFailLed(true);
+  }
+  SetFailLed(false);
 }
 // -------------------------------------------------------------------------------------------- //
