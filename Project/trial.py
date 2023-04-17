@@ -117,6 +117,7 @@ if len(sys.argv) == 2 and sys.argv[1] == 'debug':
 
 if default_values['Bluetooth'] == False:
     ser = serial.Serial(default_values['Com Port'], 9600, write_timeout = 3)
+    input("") #Replace this with something that isn't stupid
     ser.write(b'~ES')  
     ser.write(b'~ID')  
           
