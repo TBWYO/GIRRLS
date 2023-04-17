@@ -16,24 +16,23 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (ResetToggle() == false) { 
-    readSerial();
-    processIncomingQueue();
+  while (ResetToggle() == false) { // determine if the reset command has been triggered
+    readSerial(); // check the Serial bus for a 3 byte command
+    processIncomingQueue(); // determine the command that was sent and execute it
 
-      /* Old Code set to be replaced
-    if (WatchForCandyDispensed && IsCandyDispensed ()) {
-      WatchForCandyDispensed = false;
-      WriteOnSerial(CANDY_DISPENSED_RESPONSE); 
-      WatchForCandyTaken = true;
-    }
+  
+  if (WatchForCandyDispensed && IsCandyDispensed ()) {
+    WatchForCandyDispensed = false;
+    WriteOnSerial(CANDY_DISPENSED_RESPONSE); 
+    WatchForCandyTaken = true;
+  }
 
-    if (WatchForCandyTaken == true && IsCandyTaken()) {
-      WatchForCandyTaken = false;
-      WriteOnSerial(CANDY_TAKEN_RESPONSE); 
-    }
-      */
-} else {
-  Restart();
+  if (WatchForCandyTaken == true && IsCandyTaken()) {
+    WatchForCandyTaken = false;
+    WriteOnSerial(CANDY_TAKEN_RESPONSE); 
+  }
+
 }
+  Restart();
 }
 // -------------------------------------------------------------------------------------------- //
