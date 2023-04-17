@@ -209,6 +209,7 @@ void processIncomingQueue () {   //interpret the byte pulled from the cue and ex
       }
   }
 }
+}
 // -------------------------------------------------------------------------------------------- //
 void EstablishConnectionToSoftware () { // Wait for a program to talk to
   while (IsConnectionEstablished() == false) {
