@@ -33,6 +33,7 @@ int serialIncomingQueueFillAmt = 0; // How much is available to read
 int serialIncomingReadPointer = 0; // Index in queue to start read (circular buffer)
 int serialIncomingWritePointer = 0; // Index where to write next byte
 int ResetNow = 0;
+int CommsEstablishedSerial =0;
 int CommandEnable = 0;
 int AcknowledgeEnable = 0;
 int PausedForAssistance = 0; 
@@ -95,6 +96,7 @@ void readSerial () { // Generat a circular buffer to store incoming comamnds for
       // Check to be sure room still exists in buffer
       if (serialIncomingQueueFillAmt < SERIAL_INCOMING_BUFFER_SIZE) {
         serialIncomingQueue[serialIncomingWritePointer] = Serial.read();
+        Serial.println(serialIncomingQueue[serialIncomingWritePointer], HEX); // For debug only
         // Increase count of what is in buffer
         serialIncomingQueueFillAmt++;
 
