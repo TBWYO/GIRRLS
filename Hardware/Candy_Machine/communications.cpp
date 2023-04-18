@@ -8,7 +8,7 @@
 #define TRANS_TYPE_ACKNOWLEDGE 0x40 //The acknowledge trans type is denoted by an "AT" symbol '@'
 #define TRANS_TYPE_EVENT 0x25 //The event trans type is denoted by a percent '%'
 //ID10T Host Parameters
-#define ESTABLISH_CONNECTION_SERIAL 0x42 // This parameter determines that communications will occur over Serial.
+#define ESTABLISH_CONNECTION_SERIAL 0x53 // This parameter determines that communications will occur over Serial.
 // ID10T Host Commands
 #define ESTABLISH_CONNECTION 0X45 // This command is denoted by a capital 'E' 
 #define DISPENSE_CANDY 0x49 // This command is denoted by a capital 'I' 
@@ -23,7 +23,7 @@
 #define RESETTING 0X71 // This ACK is denoted by a lowercase 'q'
 // ID10T Client Acknowledgements
 #define PAUSED_FOR_ASSISTANCE 0x6a // Pause the program until issue is resolved
-#define DISPENS_NOTED 0x6m // Acknowledge that the program has counted the dispense
+#define DISPENS_NOTED 0x6d // Acknowledge that the program has counted the dispense
 #define CANDY_TAKEN_NOTED 0x74 // Acknowledge that candy was taken, reduce count
 // ID10T Buffer Constants
 #define SERIAL_INCOMING_BUFFER_SIZE 64
@@ -33,7 +33,6 @@ int serialIncomingQueueFillAmt = 0; // How much is available to read
 int serialIncomingReadPointer = 0; // Index in queue to start read (circular buffer)
 int serialIncomingWritePointer = 0; // Index where to write next byte
 int ResetNow = 0;
-int CommsEstablishedSerial = 0;
 int CommandEnable = 0;
 int AcknowledgeEnable = 0;
 int PausedForAssistance = 0; 
@@ -62,7 +61,7 @@ bool IsProgramPaused () {
   }
 }
 // -------------------------------------------------------------------------------------------- //
-void SetUpCommunications () {   // set up the serial library at baud defined, wait for serial to initilize 
+void SetUpCommunications () {   
   // Set up Serial
   Serial.begin(SERIAL_BAUD_RATE);
   // Wait for Serial           
