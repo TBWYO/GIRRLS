@@ -59,7 +59,7 @@ b4 = '4'
 def settingsGUI():
     # Create a dictionary with default values for all the settings
     default_values = {
-        "Participant": "",
+        "Participant": "Marshall",
         "Date": data.getDateStr(),
         "Computer": HOST_NAME,
         "Com Port": "4",
@@ -117,6 +117,10 @@ if len(sys.argv) == 2 and sys.argv[1] == 'debug':
 
 if default_values['Bluetooth'] == False:
     ser = serial.Serial(default_values['Com Port'], 9600, write_timeout = 3)
+    input("") #Replace this with something that isn't stupid
+    ser.write(b'~ES')  
+    ser.write(b'~ID')  
+          
 
 ##END OF CHANGES 
 
@@ -186,7 +190,7 @@ def show_fdbk(accuracy,sched_out,action,start_time,measured_refresh):
         if default_values['Bluetooth']: #if default_values about bluetoth is true
             os.system(ble_launch_string) #run the ble_send
         else: #otherwise use the com port connection to send T to te arduino script
-            ser.write(b'T')        
+            ser.write(b'~ID')        
         #corr_sound.play()
         
         for frames in range(int(math.floor(1000/refresh))):
