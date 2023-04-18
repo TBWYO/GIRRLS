@@ -3,6 +3,8 @@
 // -------------------------------------------------------------------------------------------- //
 // Serial Paramaters
 #define SERIAL_BAUD_RATE 9600
+#define XON 0x11
+#define XOFF 0x13
 // ID10T Commands Types
 #define TRANS_TYPE_COMMAND 0x7E // The command trans type is denoted by a Tilde '~'
 #define TRANS_TYPE_ACKNOWLEDGE 0x40 //The acknowledge trans type is denoted by an "AT" symbol '@'
@@ -62,7 +64,7 @@ bool IsProgramPaused () {
   }
 }
 // -------------------------------------------------------------------------------------------- //
-void SetUpCommunications () {   
+void SetUpCommunications() {
   // Set up Serial
   Serial.begin(SERIAL_BAUD_RATE);
   // Wait for Serial           
@@ -70,7 +72,30 @@ void SetUpCommunications () {
     SetFailLed(true);
   }
   SetFailLed(false);
+  Serial.flush();
+  if (Serial.available()) {
+    char c = Serial.read();
+    if (c == XON) {
+      Serial.write(XON);
+    } else if (c == XOFF) {
+      Serial.write(XOFF);
+    } else {
+
+    }
+
+  }
+  if (Serial.availableForWrite() >= 3) {  // Replaced dataToSend.length() with 3
+    Serial.write(3);  // Replaced dataToSend.length() with 3
+  } else {
+    // Buffer full, send XOFF to pause sending data
+    Serial.write(XOFF);
+    // Wait for buffer to empty before sending more data
+    while (Serial.availableForWrite() < 3) {  // Replaced dataToSend.length() with 3
+      delay(100);
+    }
+  }
 }
+
 // -------------------------------------------------------------------------------------------- //
 int ListenOnSerial () {   // Listen on Serial fallback for Buffer
   int incomingByte = 0;
@@ -173,7 +198,7 @@ void processIncomingQueue () {   //interpret the byte pulled from the cue and ex
             WriteOnSerial(TRANS_TYPE_COMMAND);
             WriteOnSerial(CONNECTION_ESTABLISHED);
             WriteOnSerial(byteRead);
-            Serial.print("\n");
+           
           }
           break;
 
@@ -183,7 +208,7 @@ void processIncomingQueue () {   //interpret the byte pulled from the cue and ex
           WriteOnSerial(DISPENSING_CANDY);
           ControlMotor(byteRead);
           WriteOnSerial(byteRead);
-          Serial.print("\n");
+         
         break;
 
         case RESET:
