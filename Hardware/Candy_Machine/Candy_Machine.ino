@@ -1,4 +1,4 @@
-#include "hardware_operations.h" 
+  #include "hardware_operations.h" 
 #include "communications.h"
 // -------------------------------------------------------------------------------------------- //
 bool WatchForCandyDispensed = false;
@@ -21,7 +21,7 @@ void loop() {
     processIncomingQueue(); // determine the command that was sent and execute it
 
   
-  if (WatchForCandyDispensed && IsCandyDispensed ()) {
+  /* if (WatchForCandyDispensed && IsCandyDispensed ()) {
     WatchForCandyDispensed = false;
     WriteOnSerial(CANDY_DISPENSED_RESPONSE); 
     WatchForCandyTaken = true;
@@ -30,7 +30,7 @@ void loop() {
   if (WatchForCandyTaken == true && IsCandyTaken()) {
     WatchForCandyTaken = false;
     WriteOnSerial(CANDY_TAKEN_RESPONSE); 
-  }
+  } */
 
 }
   Restart();
