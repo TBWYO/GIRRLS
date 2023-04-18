@@ -62,7 +62,7 @@ def settingsGUI():
         "Participant": "Marshall",
         "Date": data.getDateStr(),
         "Computer": HOST_NAME,
-        "Com Port": "4",
+        "Com Port": "COM4",
         "Fullscreen": False,
         "Bluetooth": False,
         "Test": False,
@@ -119,7 +119,6 @@ if default_values['Bluetooth'] == False:
     ser = serial.Serial(default_values['Com Port'], 9600, write_timeout = 3)
     input("") #Replace this with something that isn't stupid
     ser.write(b'~ES')  
-    ser.write(b'~ID')  
           
 
 ##END OF CHANGES 
@@ -190,7 +189,7 @@ def show_fdbk(accuracy,sched_out,action,start_time,measured_refresh):
         if default_values['Bluetooth']: #if default_values about bluetoth is true
             os.system(ble_launch_string) #run the ble_send
         else: #otherwise use the com port connection to send T to te arduino script
-            ser.write(b'~ID')        
+            ser.write(b'ID')        
         #corr_sound.play()
         
         for frames in range(int(math.floor(1000/refresh))):
@@ -198,10 +197,7 @@ def show_fdbk(accuracy,sched_out,action,start_time,measured_refresh):
             win.flip()
             
         fdbk_dur = fdbk_clock.getTime()
-        if default_values['Bluetooth']: #if bluetooth default_values is correct, do not launch ble_send 
-            pass
-        else:
-            ser.write(b'F')  #if not, we'll use the serial port connection and for that, we'll need to stop the motor by sending F to arduino      
+        
         return ('reward',fdbk_onset,fdbk_dur)
 
     elif accuracy == 1 and sched_out == 0:
