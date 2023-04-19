@@ -44,7 +44,8 @@ void SetUpHardware () {
 // -------------------------------------------------------------------------------------------- //
 void MotorMovePrimaryDispense (int StepsToMove) { // 512 == full rotation //old geizer command
 
-  MotorPrimaryDispense->step(StepsToMove, FORWARD, DOUBLE); 
+  MotorPrimaryDispense->step(StepsToMove, FORWARD, DOUBLE);
+  MotorPrimaryDispense->release();
 }
 // -------------------------------------------------------------------------------------------- //
 void ControlMotor (char parameter) {
