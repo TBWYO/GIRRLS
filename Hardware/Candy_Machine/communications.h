@@ -3,7 +3,7 @@
 
 void SetUpCommunications ();
 int ListenOnSerial ();
-void WriteOnSerial (int SendOnSerial);
+void WriteOnSerial (char* SendOnSerialArray, int length);
 void EstablishConnectionToSoftware ();
 void readSerial();
 void processIncomingQueue();

@@ -33,7 +33,7 @@ MOTOR_ROTATE = 0x44
 
 establishConnection = [TRANS_TYPE_COMMAND,ESTABLISH_CONNECTION,ESTABLISH_CONNECTION_SERIAL]
 moveMotor = [TRANS_TYPE_COMMAND,DISPENSE_CANDY,MOTOR_ROTATE]
-ser = serial.Serial("COM4", 9600, xonxoff = True)
+ser = serial.Serial("/dev/ttyUSB0", 9600, xonxoff = False)
 
 def command_to_send(command, response):
     ser.reset_input_buffer()
@@ -42,9 +42,8 @@ def command_to_send(command, response):
         return True;
     else:
         return False;
-print(ser.cts)
-print(ser.dtr)
-#time.sleep(3) # Temporary solution until flow control is implemented
-if command_to_send(establishConnection,b"~eS"):
-    command_to_send(moveMotor,b"~iD")
-
+#print(ser.cts)
+#print(ser.dtr)
+time.sleep(3) # Temporary solution until flow control is implemented
+if command_to_send(establishConnection,b"@es"):
+    command_to_send(moveMotor,b"@iy")
