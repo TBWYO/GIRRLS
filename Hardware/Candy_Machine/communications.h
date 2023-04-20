@@ -7,7 +7,8 @@ void WriteArrayOnSerial (char* SendOnSerialArray, int length);
 void EstablishConnectionToSoftware ();
 void readSerial();
 void processIncomingQueue();
-bool ResetToggle ();
+void ProcessOutgoingQueue ();
+//bool ResetToggle();
 void DetermineCommTypes ();
-void WriteOutgoingBuffer ();
+void WriteOutgoingBuffer (char* ByteArray, int length);
 #endif

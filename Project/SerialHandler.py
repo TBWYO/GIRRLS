@@ -1,10 +1,10 @@
 import serial
 import time
 
-ser = serial.Serial('/dev/tyUSB0', 9600)
+ser = serial.Serial('/dev/ttyUSB0', 9600)
 ser.flushInput()
 ser.flushOutput()
-
+time.sleep(3)
 ser.write(b'~ES')
 ser.flush()
 
@@ -13,7 +13,7 @@ response = b''
 
 while response != expected_response:
     if ser.inWaiting() > 0:
-        response += ser.read():
+        response += ser.read()
 
 ser.close()
 print(response)

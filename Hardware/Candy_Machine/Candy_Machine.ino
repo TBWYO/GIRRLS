@@ -11,10 +11,6 @@ void setup() {
 }
 // -------------------------------------------------------------------------------------------- //
 void loop() {
-  // put your main code here, to run repeatedly:
-  while (ResetToggle() == false) { // determine if the reset command has been triggered
-    DetermineCommTypes (); // listen on serial
-    }
-  Restart();
+DetermineCommTypes ();
 }
 // -------------------------------------------------------------------------------------------- //

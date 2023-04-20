@@ -23,23 +23,23 @@ char MOTOR_ROTATE_RESPONSE[3] = {0x40,0x69,0x79};
 // ID10T Incoming Buffer Integers
 char SerialIncomingQueue[SERIAL_INCOMING_BUFFER_SIZE];
 int SerialIncomingQueueFillAmt = 0; // How much is available to read
-int serialIncomingReadPointer = 0; // Index in queue to start read (circular buffer)
+int SerialIncomingReadPointer = 0; // Index in queue to start read (circular buffer)
 int SerialIncomingWritePointer = 0; // Index where to write next byte
 bool ResetToggle = false;
 bool IsConnectionEstablished = false;
 bool IsProgramPaused = false; 
-bool WaitingForCommand = false;
 // ID10T Outgoing Buffer Cosntants
 #define SERIAL_OUTGOING_BUFFER_SIZE 64
+#define CHECK_IF_ENOUGH_BYTES_TO_WRITE_TO_QUEUE 3
 // ID10T Outgoing Buffer Integers
-char serialOutgoingQueue[SERIAL_OUTGOING_BUFFER_SIZE];
+char SerialOutgoingQueue[SERIAL_OUTGOING_BUFFER_SIZE];
 int SerialOutgoingQueueFillAmt = 0; // How much is available to read
 int SerialOutgoingReadPointer = 0; // Index in queue to start read (circular buffer)
 int SerialOutgoingWritePointer = 0; // Index where to write next byte
-int BytesToWrite[3] = {0,0,0};
+bool ReadyToWrite = false;
 bool WatchForCandyDispensed = false;
 bool WatchForCandyTaken = false;
-bool WaitingForCommand = false;
+bool WaitingForCommand = true;
 // -------------------------------------------------------------------------------------------- //
 void SetUpCommunications() {
   // Set up Serial at predefined baudrate
@@ -94,13 +94,13 @@ void ReadSerial () { // Generat a circular buffer to store incoming comamnds for
 // -------------------------------------------------------------------------------------------- //
 char PullByteOffIncomingQueue () {   // read the bytes stored in the incoming buffer
   // Note that this function is not verifying bytes exist before pulling so you MUST be sure there is a usable byte BEFORE calling this function
-  char returnValue = SerialIncomingQueue[serialIncomingReadPointer];
+  char returnValue = SerialIncomingQueue[SerialIncomingReadPointer];
   // consume up the byte read by moving the read pointer and decreasing fill amount
-  if (serialIncomingReadPointer == SERIAL_INCOMING_BUFFER_SIZE - 1) {
+  if (SerialIncomingReadPointer == SERIAL_INCOMING_BUFFER_SIZE - 1) {
     // Loop back to first index
-    serialIncomingReadPointer = 0;
+    SerialIncomingReadPointer = 0;
   } else {
-    serialIncomingReadPointer++;
+    SerialIncomingReadPointer++;
   }
   SerialIncomingQueueFillAmt--;
   return returnValue;
@@ -129,16 +129,18 @@ void ProcessIncomingQueue () {   //interpret the byte pulled from the cue and ex
         ByteRead = PullByteOffIncomingQueue();
         if (ByteRead == ESTABLISH_CONNECTION[2]) {
           IsConnectionEstablished = true;
-          BytesToWrite[3] = {ESTABLISH_CONNECTION_SERIAL_RESPONSE}; 
-          void WriteOutgoingBuffer ();
+          // char* BytesToWrite[3] = {ESTABLISH_CONNECTION_SERIAL_RESPONSE}; 
+          WriteOutgoingBuffer (ESTABLISH_CONNECTION_SERIAL_RESPONSE, sizeof(ESTABLISH_CONNECTION_SERIAL_RESPONSE));
+          ProcessOutgoingQueue ();
         }
       } else if (ByteRead == DISPENSE_CANDY[1]) {
         ByteRead = PullByteOffIncomingQueue();
           if (ByteRead == DISPENSE_CANDY[2]) {
           ControlMotor(ByteRead);
           WatchForCandyDispensed = true;
-          BytesToWrite[3] = {MOTOR_ROTATE_RESPONSE};
-          WriteOutgoingBuffer (); 
+          // char* BytesToWrite[3] = {MOTOR_ROTATE_RESPONSE};
+          WriteOutgoingBuffer (MOTOR_ROTATE_RESPONSE, sizeof(MOTOR_ROTATE_RESPONSE)); 
+          ProcessOutgoingQueue ();
           }
       } /*else if (ByteRead == RESET) {
         ByteRead = PullByteOffIncomingQueue();
@@ -154,32 +156,46 @@ void ProcessIncomingQueue () {   //interpret the byte pulled from the cue and ex
   }
   }
 // -------------------------------------------------------------------------------------------- //
-void WriteOutgoingBuffer () {
-  if (BytesToWrite[3] > {0,0,0}) {  //determine if something at all has been set to write to the buffer
-    for (int i - 0; i < BytesToWrite; i++) {
+void WriteOutgoingBuffer (char* ByteArray, int length) {
+  //Serial.write('1');
+  if (length >= CHECK_IF_ENOUGH_BYTES_TO_WRITE_TO_QUEUE) { 
+    //Serial.write('2');
+    for (int i = 0; i < length; i++) {
+      // Check to be sure room still exists in buffer
       if (SerialOutgoingQueueFillAmt < SERIAL_OUTGOING_BUFFER_SIZE) {
-        serialOutgoingQueue[SerialOutgoingWritePointer] = Serial.read();
+        //Serial.write('3');
+        // int SerialReadByte = Serial.read();
+        // if (SerialReadByte ==XON)
+        SerialOutgoingQueue[SerialOutgoingWritePointer] = ByteArray[i];
+        // Serial.println(SerialIncomingQueue[SerialIncomingWritePointer], HEX); // For debug only
+        // Increase count of what is in buffer
         SerialOutgoingQueueFillAmt++;
-        if (SerialOutgoingWritePointer == SERIAL_OUTGOING_BUFFER_SIZE -1) {
+        // Move where to write next byte (may need to loop back to start of array if end is full).
+        // Note that end is based on a start index of 0 so 64 size would have index range is 0-63
+        if (SerialOutgoingWritePointer == SERIAL_OUTGOING_BUFFER_SIZE - 1) {
+          //Serial.write('4');
+          // Loop back to first index
           SerialOutgoingWritePointer = 0;
         } else {
+          //Serial.write('5');
           SerialOutgoingWritePointer++;
         }
       }
     }
   }
-  }
+  //WriteArrayOnSerial (SerialOutgoingQueue, 3);
+}
 // -------------------------------------------------------------------------------------------- //
 char PullByteOffOutgoingQueue () {   // read the bytes on the buffer
   // Note that this function is not verifying bytes exist before pulling so you MUST be sure there is a usable byte BEFORE calling this function
-  char returnValue = SerialOutgoingQueue[serialOutgoingReadPointer];
+  char returnValue = SerialOutgoingQueue[SerialOutgoingReadPointer];
 
   // consume up the byte read by moving the read pointer and decreasing fill amount
   if (SerialOutgoingReadPointer == SERIAL_OUTGOING_BUFFER_SIZE - 1) {
     // Loop back to first index
-    serialOutgoingReadPointer = 0;
+    SerialOutgoingReadPointer = 0;
   } else {
-    serialOutgoingReadPointer++;
+    SerialOutgoingReadPointer++;
   }
   SerialOutgoingQueueFillAmt--;
 
@@ -187,23 +203,28 @@ char PullByteOffOutgoingQueue () {   // read the bytes on the buffer
 }
 // -------------------------------------------------------------------------------------------- //
 void ProcessOutgoingQueue () { // pull the bytes off of the outgoing buffer, analyze them, reconstruct them, then send the array over serial
-  if (SerialOutgoingQueueFillAmt > 2) {
-    char ByteFromQueue1 = PullByteOffOutgoingQueue ();
+  if (SerialOutgoingQueueFillAmt >= CHECK_IF_ENOUGH_BYTES_TO_WRITE_TO_QUEUE) {
+    char ByteToWrite1 = 0;
+    char ByteToWrite2 = 0;
+    char ByteToWrite3 = 0;
+    char ByteFromQueue1 = PullByteOffOutgoingQueue();
+   // Serial.write('1');
+    //Serial.write(ByteFromQueue1);
     if (ByteFromQueue1 == TRANS_TYPE_COMMAND) {
       TransTypeCommand = true;
       TransTypeAcknowledge = false;
       TransTypeEvent = false;
-      char ByteToWrite1 = ByteFromQueue1;
+      ByteToWrite1 = ByteFromQueue1;
     } else if (ByteFromQueue1 == TRANS_TYPE_ACKNOWLEDGE) {
         TransTypeCommand = false;
         TransTypeAcknowledge = true;
         TransTypeEvent = false;
-        char ByteToWrite1 = ByteFromQueue1;
+        ByteToWrite1 = ByteFromQueue1;
     } else if (ByteFromQueue1 == TRANS_TYPE_ACKNOWLEDGE) {
         TransTypeCommand = false;
         TransTypeAcknowledge = false;
         TransTypeEvent = true;
-        char ByteToWrite1 = ByteFromQueue1;
+        ByteToWrite1 = ByteFromQueue1;
     } else {
         TransTypeCommand = false;
         TransTypeAcknowledge = false;
@@ -214,70 +235,75 @@ void ProcessOutgoingQueue () { // pull the bytes off of the outgoing buffer, ana
       // To send a command to the python game that is sent over the outgoing buffer, add it here
     } else if (TransTypeAcknowledge) {
       char ByteFromQueue2 = PullByteOffOutgoingQueue ();
+      //Serial.write('2');
+      //Serial.write(ByteFromQueue2);
       if (ByteFromQueue2 == 0x65) { // determine if the acknoledgement is a connection established command
-        char ByteToWrite2 = ByteFromQueue2;
+        ByteToWrite2 = ByteFromQueue2;
         char ByteFromQueue3 = PullByteOffOutgoingQueue ();
         if (ByteFromQueue3 == 0x73) { // determine if serial is used
-          char BytesToWrite3 = ByteFromQueue3;
+          ByteToWrite3 = ByteFromQueue3;
+          //Serial.write('3');
+          //Serial.write(ByteFromQueue3);
         } else if (ByteFromQueue3 == 0x62) { // determine if bluetooth is used
-          char BytesToWrite3 = ByteFromQueue3;
+          ByteToWrite3 = ByteFromQueue3;
         }
       } else if (ByteFromQueue2 = 0x49) {
-        char ByteToWrite2 = ByteFromQueue2;
+        ByteToWrite2 = ByteFromQueue2;
         char ByteFromQueue3 = PullByteOffOutgoingQueue ();
         if (ByteFromQueue3 == 0x79) { // determine if the state was a sucess 
-          char BytesToWrite3 = ByteFromQueue3;
+          ByteToWrite3 = ByteFromQueue3;
         } else if (ByteFromQueue3 == 0x7a) { //determine if the state was a fail
-          char BytesToWrite3 = ByteFromQueue3;
+          ByteToWrite3 = ByteFromQueue3;
         }
       }
     } else if (TransTypeEvent) {
       char ByteFromQueue2 = PullByteOffOutgoingQueue ();
       if (ByteFromQueue1 == 0x4a) { // determine if the event is a jam or empty event (cannot tell the difference)
-        char ByteToWrite2 = ByteFromQueue2;
+        ByteToWrite2 = ByteFromQueue2;
         char ByteFromQueue3 = PullByteOffOutgoingQueue ();
         if (ByteFromQueue3 == 0x50) { //determine if the parameter is a pause (always will be)
-          char BytesToWrite3 = ByteFromQueue3;
+          ByteToWrite3 = ByteFromQueue3;
     }
   } else if (ByteFromQueue1 == 0x4d) { // determine if the event is a dispense detected
-        char ByteToWrite2 = ByteFromQueue2;
+        ByteToWrite2 = ByteFromQueue2;
         char ByteFromQueue3 = PullByteOffOutgoingQueue ();
         if (ByteFromQueue3 == 0x43) { // determine if the python game should increase the total count of candies (it thinks) are in the tray
-          char BytesToWrite3 = ByteFromQueue3;
+          ByteToWrite3 = ByteFromQueue3;
         }
   } else if (ByteFromQueue1 == 0x54) { // determine if the event was a candy been taken
-          char ByteToWrite2 = ByteFromQueue2;
+          ByteToWrite2 = ByteFromQueue2;
           char ByteFromQueue3 = PullByteOffOutgoingQueue ();
           if (ByteFromQueue3 == 0x52) { // determine if the python game should decrease the total count of candies (it thinks) are in the tray
-            char BytesToWrite3 = ByteFromQueue3;
+            ByteToWrite3 = ByteFromQueue3;
           }
-    int BytesToSend[3] = {ByteFromQueue1,ByteToWrite2,ByteFromQueue3};
+  }
+  }
+    char BytesToSend[3] = {ByteToWrite1,ByteToWrite2,ByteToWrite3};
     WriteArrayOnSerial(BytesToSend, 3);
   }
-  }
-    }
-  }
+}
 // -------------------------------------------------------------------------------------------- //
 void DetermineCommTypes () {
-   
-  if (WaitingForCommand) {
-    readSerial();
-    ProcessIncomingQueue();
-  } else if (WatchForCandyDispensed && IsCandyDispensed ()) {
+  ReadSerial();
+  ProcessIncomingQueue();
+  //WriteOutgoingBuffer ();
+  //ProcessOutgoingQueue ();
+  /*if (WatchForCandyDispensed && IsCandyDispensed ()) {
     WatchForCandyDispensed = false;
     WatchForCandyTaken = true;
-    BytesToWrite[3] = {0x25,0x4d,0x43} // write the bytes needed to indicate dispense to the outgoing buffer (very temporary)
+    int BytesToWrite[3] = {0x25,0x4d,0x43}; // write the bytes needed to indicate dispense to the outgoing buffer (very temporary)
     WriteOutgoingBuffer ();
-  } else if (WatchForCandyTaken == true && IsCandyTaken()) {
+}
+  if (WatchForCandyTaken == true && IsCandyTaken()) {
     WatchForCandyTaken = false;
-    BytesToWrite[3] = {0x25,0x54,0x52} // write the bytes needed to indicate dispense to the outgoing buffer (very temporary)
+    int BytesToWrite[3] = {0x25,0x54,0x52}; // write the bytes needed to indicate dispense to the outgoing buffer (very temporary)
     WriteOutgoingBuffer ();
-  }
+} */
 }
 // -------------------------------------------------------------------------------------------- //
 void EstablishConnectionToSoftware () { 
   while (!IsConnectionEstablished) {
-    readSerial(); 
+    ReadSerial(); 
     ProcessIncomingQueue(); 
     SetFailLed(true);
   }
