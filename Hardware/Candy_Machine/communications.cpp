@@ -36,10 +36,26 @@ char SerialOutgoingQueue[SERIAL_OUTGOING_BUFFER_SIZE];
 int SerialOutgoingQueueFillAmt = 0; // How much is available to read
 int SerialOutgoingReadPointer = 0; // Index in queue to start read (circular buffer)
 int SerialOutgoingWritePointer = 0; // Index where to write next byte
-bool ReadyToWrite = false;
 bool WatchForCandyDispensed = false;
 bool WatchForCandyTaken = false;
+bool ReadyToWrite = false;
 bool WaitingForCommand = true;
+// -------------------------------------------------------------------------------------------- //
+void setWatchForCandyDispensed (bool newValue) {
+  WatchForCandyDispensed = newValue;
+}
+// -------------------------------------------------------------------------------------------- //
+bool getWatchForCandyDispensed () {
+  return WatchForCandyDispensed;
+}
+// -------------------------------------------------------------------------------------------- //
+void setWatchForCandyTaken (bool newValue) {
+  WatchForCandyTaken = newValue;
+}
+// -------------------------------------------------------------------------------------------- //
+bool getWatchForCandyTaken () {
+  return WatchForCandyTaken;
+}
 // -------------------------------------------------------------------------------------------- //
 void SetUpCommunications() {
   // Set up Serial at predefined baudrate
@@ -51,16 +67,6 @@ void SetUpCommunications() {
   SetFailLed(false);
   }
 // -------------------------------------------------------------------------------------------- //
-int ListenOnSerial () {   // Listen on Serial fallback for Buffer
-  int IncomingByte = 0;
-  if (Serial.available() > 0) {
-    // read the incoming byte:
-    IncomingByte = Serial.read();
-    // Serial.println(IncomingByte, HEX); // For debug only
-  }
-  return IncomingByte;
-  }
-// -------------------------------------------------------------------------------------------- //
 void WriteArrayOnSerial (char* SendOnSerialArray, int length) {   // Output to the Serial BUS
   Serial.write(SendOnSerialArray, length);
   }
@@ -68,7 +74,7 @@ void WriteArrayOnSerial (char* SendOnSerialArray, int length) {   // Output to t
 void ReadSerial () { // Generat a circular buffer to store incoming comamnds for later interpretation
   int BytesToRead = Serial.available();
   if (BytesToRead > 0) {
-    // Dump each byte to queue
+    // Dump each b{0x25,0x54,0x52}yte to queue
     for (int i = 0; i < BytesToRead; i++) {
       // Check to be sure room still exists in buffer
       if (SerialIncomingQueueFillAmt < SERIAL_INCOMING_BUFFER_SIZE) {
@@ -131,7 +137,6 @@ void ProcessIncomingQueue () {   //interpret the byte pulled from the cue and ex
           IsConnectionEstablished = true;
           // char* BytesToWrite[3] = {ESTABLISH_CONNECTION_SERIAL_RESPONSE}; 
           WriteOutgoingBuffer (ESTABLISH_CONNECTION_SERIAL_RESPONSE, sizeof(ESTABLISH_CONNECTION_SERIAL_RESPONSE));
-          ProcessOutgoingQueue ();
         }
       } else if (ByteRead == DISPENSE_CANDY[1]) {
         ByteRead = PullByteOffIncomingQueue();
@@ -140,7 +145,6 @@ void ProcessIncomingQueue () {   //interpret the byte pulled from the cue and ex
           WatchForCandyDispensed = true;
           // char* BytesToWrite[3] = {MOTOR_ROTATE_RESPONSE};
           WriteOutgoingBuffer (MOTOR_ROTATE_RESPONSE, sizeof(MOTOR_ROTATE_RESPONSE)); 
-          ProcessOutgoingQueue ();
           }
       } /*else if (ByteRead == RESET) {
         ByteRead = PullByteOffIncomingQueue();
@@ -198,113 +202,28 @@ char PullByteOffOutgoingQueue () {   // read the bytes on the buffer
     SerialOutgoingReadPointer++;
   }
   SerialOutgoingQueueFillAmt--;
-
   return returnValue;
 }
 // -------------------------------------------------------------------------------------------- //
 void ProcessOutgoingQueue () { // pull the bytes off of the outgoing buffer, analyze them, reconstruct them, then send the array over serial
   if (SerialOutgoingQueueFillAmt >= CHECK_IF_ENOUGH_BYTES_TO_WRITE_TO_QUEUE) {
-    char ByteToWrite1 = 0;
-    char ByteToWrite2 = 0;
-    char ByteToWrite3 = 0;
-    char ByteFromQueue1 = PullByteOffOutgoingQueue();
-   // Serial.write('1');
-    //Serial.write(ByteFromQueue1);
-    if (ByteFromQueue1 == TRANS_TYPE_COMMAND) {
-      TransTypeCommand = true;
-      TransTypeAcknowledge = false;
-      TransTypeEvent = false;
-      ByteToWrite1 = ByteFromQueue1;
-    } else if (ByteFromQueue1 == TRANS_TYPE_ACKNOWLEDGE) {
-        TransTypeCommand = false;
-        TransTypeAcknowledge = true;
-        TransTypeEvent = false;
-        ByteToWrite1 = ByteFromQueue1;
-    } else if (ByteFromQueue1 == TRANS_TYPE_ACKNOWLEDGE) {
-        TransTypeCommand = false;
-        TransTypeAcknowledge = false;
-        TransTypeEvent = true;
-        ByteToWrite1 = ByteFromQueue1;
-    } else {
-        TransTypeCommand = false;
-        TransTypeAcknowledge = false;
-        TransTypeEvent = false;
-        ByteFromQueue1 = 0;
-    }
-    if (TransTypeCommand) {
-      // To send a command to the python game that is sent over the outgoing buffer, add it here
-    } else if (TransTypeAcknowledge) {
-      char ByteFromQueue2 = PullByteOffOutgoingQueue ();
-      //Serial.write('2');
-      //Serial.write(ByteFromQueue2);
-      if (ByteFromQueue2 == 0x65) { // determine if the acknoledgement is a connection established command
-        ByteToWrite2 = ByteFromQueue2;
-        char ByteFromQueue3 = PullByteOffOutgoingQueue ();
-        if (ByteFromQueue3 == 0x73) { // determine if serial is used
-          ByteToWrite3 = ByteFromQueue3;
-          //Serial.write('3');
-          //Serial.write(ByteFromQueue3);
-        } else if (ByteFromQueue3 == 0x62) { // determine if bluetooth is used
-          ByteToWrite3 = ByteFromQueue3;
-        }
-      } else if (ByteFromQueue2 = 0x49) {
-        ByteToWrite2 = ByteFromQueue2;
-        char ByteFromQueue3 = PullByteOffOutgoingQueue ();
-        if (ByteFromQueue3 == 0x79) { // determine if the state was a sucess 
-          ByteToWrite3 = ByteFromQueue3;
-        } else if (ByteFromQueue3 == 0x7a) { //determine if the state was a fail
-          ByteToWrite3 = ByteFromQueue3;
-        }
-      }
-    } else if (TransTypeEvent) {
-      char ByteFromQueue2 = PullByteOffOutgoingQueue ();
-      if (ByteFromQueue1 == 0x4a) { // determine if the event is a jam or empty event (cannot tell the difference)
-        ByteToWrite2 = ByteFromQueue2;
-        char ByteFromQueue3 = PullByteOffOutgoingQueue ();
-        if (ByteFromQueue3 == 0x50) { //determine if the parameter is a pause (always will be)
-          ByteToWrite3 = ByteFromQueue3;
-    }
-  } else if (ByteFromQueue1 == 0x4d) { // determine if the event is a dispense detected
-        ByteToWrite2 = ByteFromQueue2;
-        char ByteFromQueue3 = PullByteOffOutgoingQueue ();
-        if (ByteFromQueue3 == 0x43) { // determine if the python game should increase the total count of candies (it thinks) are in the tray
-          ByteToWrite3 = ByteFromQueue3;
-        }
-  } else if (ByteFromQueue1 == 0x54) { // determine if the event was a candy been taken
-          ByteToWrite2 = ByteFromQueue2;
-          char ByteFromQueue3 = PullByteOffOutgoingQueue ();
-          if (ByteFromQueue3 == 0x52) { // determine if the python game should decrease the total count of candies (it thinks) are in the tray
-            ByteToWrite3 = ByteFromQueue3;
-          }
-  }
-  }
+    char ByteToWrite1 = PullByteOffOutgoingQueue();
+    char ByteToWrite2 = PullByteOffOutgoingQueue();
+    char ByteToWrite3 = PullByteOffOutgoingQueue();
     char BytesToSend[3] = {ByteToWrite1,ByteToWrite2,ByteToWrite3};
-    WriteArrayOnSerial(BytesToSend, 3);
+    WriteArrayOnSerial(BytesToSend, sizeof(BytesToSend));
   }
 }
 // -------------------------------------------------------------------------------------------- //
 void DetermineCommTypes () {
   ReadSerial();
   ProcessIncomingQueue();
-  //WriteOutgoingBuffer ();
-  //ProcessOutgoingQueue ();
-  /*if (WatchForCandyDispensed && IsCandyDispensed ()) {
-    WatchForCandyDispensed = false;
-    WatchForCandyTaken = true;
-    int BytesToWrite[3] = {0x25,0x4d,0x43}; // write the bytes needed to indicate dispense to the outgoing buffer (very temporary)
-    WriteOutgoingBuffer ();
-}
-  if (WatchForCandyTaken == true && IsCandyTaken()) {
-    WatchForCandyTaken = false;
-    int BytesToWrite[3] = {0x25,0x54,0x52}; // write the bytes needed to indicate dispense to the outgoing buffer (very temporary)
-    WriteOutgoingBuffer ();
-} */
+  ProcessOutgoingQueue ();
 }
 // -------------------------------------------------------------------------------------------- //
 void EstablishConnectionToSoftware () { 
   while (!IsConnectionEstablished) {
-    ReadSerial(); 
-    ProcessIncomingQueue(); 
+    DetermineCommTypes();
     SetFailLed(true);
   }
   SetFailLed(false);
