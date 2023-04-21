@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "hardware_operations.h" 
 #include "communications.h"
 
@@ -7,9 +9,7 @@ char EVENT_CANDY_TAKEN[3] = {0x25,0x54,0x52};
 
 // -------------------------------------------------------------------------------------------- //
 void setup() {
-    // set up communications
-  SetUpCommunications();
-    //Determine if the python program is present
+  //Determine if the python program is present
   EstablishConnectionToSoftware ();
   // set up hardware:
   SetUpHardware();

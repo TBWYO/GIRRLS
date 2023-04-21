@@ -1,15 +1,16 @@
+#include "config.h"
+
 #include <Arduino.h>
 #include "hardware_operations.h"
 #include "communications.h"
 // -------------------------------------------------------------------------------------------- //
-// Serial Paramaters
-#define SERIAL_BAUD_RATE 9600
+
 // ID10T TRANS Types
 #define TRANS_TYPE_COMMAND 0x7E // The command trans type is denoted by a Tilde '~'
 #define TRANS_TYPE_ACKNOWLEDGE 0x40 //The acknowledge trans type is denoted by an "AT" symbol '@'
 #define TRANS_TYPE_EVENT 0x25 // %
 bool TransTypeCommand = false; 
-bool TransTypeAcknowledge = false;
+bool TransTypeAcknowledge = false; 
 bool TransTypeEvent = false;
 // ID10T Host Commands
 int ESTABLISH_CONNECTION[3] = {0x7e,0x45,0x53}; 
@@ -18,8 +19,7 @@ int DISPENSE_CANDY[3] = {0x7e,0x49,0x44}; // This command is denoted by a capita
 // ID10T Host Acknowledgements
 char ESTABLISH_CONNECTION_SERIAL_RESPONSE[3] = {0x40,0x65,0x73};
 char MOTOR_ROTATE_RESPONSE[3] = {0x40,0x69,0x79};
-// ID10T Incoming Buffer Constants
-#define SERIAL_INCOMING_BUFFER_SIZE 64
+
 // ID10T Incoming Buffer Integers
 char SerialIncomingQueue[SERIAL_INCOMING_BUFFER_SIZE];
 int SerialIncomingQueueFillAmt = 0; // How much is available to read
@@ -28,8 +28,7 @@ int SerialIncomingWritePointer = 0; // Index where to write next byte
 bool ResetToggle = false;
 bool IsConnectionEstablished = false;
 bool IsProgramPaused = false; 
-// ID10T Outgoing Buffer Cosntants
-#define SERIAL_OUTGOING_BUFFER_SIZE 64
+
 #define CHECK_IF_ENOUGH_BYTES_TO_WRITE_TO_QUEUE 3
 // ID10T Outgoing Buffer Integers
 char SerialOutgoingQueue[SERIAL_OUTGOING_BUFFER_SIZE];
@@ -60,12 +59,11 @@ bool getWatchForCandyTaken () {
 void SetUpCommunications() {
   // Set up Serial at predefined baudrate
   Serial.begin(SERIAL_BAUD_RATE);
-  // Wait for Serial           
-  while (!Serial) {
-    SetFailLed(true);
-  }
-  SetFailLed(false);
-  }
+
+  // Wait for Serial
+  SetFailLed(true);           
+  while (!Serial);
+}
 // -------------------------------------------------------------------------------------------- //
 void WriteArrayOnSerial (char* SendOnSerialArray, int length) {   // Output to the Serial BUS
   Serial.write(SendOnSerialArray, length);
@@ -74,7 +72,7 @@ void WriteArrayOnSerial (char* SendOnSerialArray, int length) {   // Output to t
 void ReadSerial () { // Generat a circular buffer to store incoming comamnds for later interpretation
   int BytesToRead = Serial.available();
   if (BytesToRead > 0) {
-    // Dump each b{0x25,0x54,0x52}yte to queue
+    // Dump each b{0x25,0x54,0x    SetFailLed(true);52}yte to queue
     for (int i = 0; i < BytesToRead; i++) {
       // Check to be sure room still exists in buffer
       if (SerialIncomingQueueFillAmt < SERIAL_INCOMING_BUFFER_SIZE) {
@@ -128,7 +126,7 @@ void ProcessIncomingQueue () {   //interpret the byte pulled from the cue and ex
       ByteRead = 0;
       TransTypeCommand = false;
       TransTypeAcknowledge = false;
-    }
+    }    SetFailLed(true);
     if (TransTypeCommand) { 
       ByteRead = PullByteOffIncomingQueue();
       if (ByteRead == ESTABLISH_CONNECTION[1]) {
@@ -147,7 +145,7 @@ void ProcessIncomingQueue () {   //interpret the byte pulled from the cue and ex
           WriteOutgoingBuffer (MOTOR_ROTATE_RESPONSE, sizeof(MOTOR_ROTATE_RESPONSE)); 
           }
       } /*else if (ByteRead == RESET) {
-        ByteRead = PullByteOffIncomingQueue();
+        ByteRead = PullByteOffInc    SetFailLed(true);omingQueue();
         //WriteOnSerial(TRANS_TYPE_COMMAND);
         //WriteOnSerial(RESETTING);
         Restart();
@@ -222,9 +220,12 @@ void DetermineCommTypes () {
 }
 // -------------------------------------------------------------------------------------------- //
 void EstablishConnectionToSoftware () { 
+  // set up communications
+  SetUpCommunications();
+
+  // Watch for init command
   while (!IsConnectionEstablished) {
     DetermineCommTypes();
-    SetFailLed(true);
   }
   SetFailLed(false);
 }

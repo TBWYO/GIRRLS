@@ -1,13 +1,9 @@
+#include "config.h"
+
 #include <Arduino.h> 
 #include <Adafruit_MotorShield.h> // Need to get appropriate library if new arduino install
 #include "hardware_operations.h"
-#define PIN_LED_FAIL   17
-#define PIN_RESET 35
-#define PIN_CANDY_DISPENSE_DETECT 27 // Beambreaker collector port
-#define PIN_USER_EXTRACTION_DETECT 7 // Beambreaker collector port
-#define MOTOR_PRIMARY_DISPENSE_SPEED 20 // 0 TO 255 Valid
-#define MOTOR_ROTATION_PER_DISPENSE (MOTOR_ROTATION_FULL_360_DEG / 4)
-#define MOTOR_ROTATE_TRUE 0X44 // Capital "D"
+
 
 // Setup instance of motor stepper
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); // Create the motor shield object with the default I2C address
@@ -32,8 +28,12 @@ void SetUpHardware () {
 
   // Configuring the motor
   if (!AFMS.begin()) {         // create with the default frequency 1.6KHz
-    SetFailLed(true);
-    while (1);
+    bool setLedOn = false;
+    while (1) {
+      setLedOn = !setLedOn;
+      SetFailLed(setLedOn);
+      delay(1000);
+    }
   }
   MotorPrimaryDispense->setSpeed(MOTOR_PRIMARY_DISPENSE_SPEED); // configure speed
   
@@ -47,7 +47,7 @@ void MotorMovePrimaryDispense (int StepsToMove) { // 512 == full rotation //old 
   MotorPrimaryDispense->step(StepsToMove, FORWARD, DOUBLE);
   MotorPrimaryDispense->release();
 }
-// -------------------------------------------------------------------------------------------- //
+// ------#include "config.h"-------------------------------------------------------------------------------------- //
 void ControlMotor (char parameter) {
  if (parameter == 0x44) {
  MotorMovePrimaryDispense(MOTOR_ROTATION_PER_DISPENSE);
