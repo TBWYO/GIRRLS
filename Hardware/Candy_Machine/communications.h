@@ -1,11 +1,18 @@
 #ifndef COMMUNICATIONS
 #define COMMUNICATIONS
 
+void setWatchForCandyDispensed (bool newValue);
+bool getWatchForCandyDispensed ();
+void setWatchForCandyTaken (bool newValue);
+bool getWatchForCandyTaken ();
 void SetUpCommunications ();
 int ListenOnSerial ();
-void WriteOnSerial (int SendOnSerial);
+void WriteArrayOnSerial (char* SendOnSerialArray, int length);
 void EstablishConnectionToSoftware ();
 void readSerial();
 void processIncomingQueue();
-bool ResetToggle ();
+void ProcessOutgoingQueue ();
+//bool ResetToggle();
+void DetermineCommTypes ();
+void WriteOutgoingBuffer (char* ByteArray, int length);
 #endif
