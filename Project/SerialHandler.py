@@ -7,19 +7,18 @@ TRANS_TYPE_COMMAND = 0x7E
 TRANS_TYPE_ACKNOWLEDGE = 0x40
 TRANS_TYPE_EVENT = 0x25
 
-ser = serial.Serial('/dev/ttyUSB0', 9600)
-ser.flushInput()
-ser.flushOutput()
-time.sleep(3)
-ser.write(b'~ES')
-ser.flush()
+#Host Parameters
+ESTABLISH_CONNECTION_SERIAL = 0x53
 
-expected_response =b'@es'
-response = b''
+#Host Commands
+ESTABLISH_CONNECTION = 0x45
+DISPENSE_CANDY = 0x49
+RESET = 0x51
 
-while response != expected_response:
-    if ser.inWaiting() > 0:
-        response += ser.read()
+#Client Events
+JAM_OR_EMPTY = 0xa
+DISPENSE_DETECTED = 0x4d
+CANDY_TAKEN = 0x54
 
 #Host Acknowledgements
 CONNECTION_ESTABLISHED = 0x65
