@@ -19,6 +19,9 @@ from bleak.backends.scanner import AdvertisementData
 prefs.hardware['audioLib'] = ['PTB','pyo','pygame','sounddevice']
 from psychopy import sound
 import psychopy_sounddevice
+import SerialHandler
+import keyboard
+
 
 # Set variables for paths we will be using, as well as other useful default_valuesrmation
 CWD = os.getcwd()
@@ -48,7 +51,7 @@ num_trials = 60 # Per block.
 trial_dur = 8 # On average.
 lastHRF = 15 # Time in sec, adjusted on-fly to account for timing errors.
 end_time = (TR * num_disdaqs) + (num_trials * trial_dur) + lastHRF
-
+baud = 9600
 # These variables seem to relate to the choices
 b0 = '0'
 b1 = '1'
@@ -57,9 +60,10 @@ b3 = '3'
 b4 = '4'
 
 def settingsGUI():
+    print("Showing GUI")
     # Create a dictionary with default values for all the settings
     default_values = {
-        "Participant": "Marshall",
+        "Participant": "ParticipantName",
         "Date": data.getDateStr(),
         "Computer": HOST_NAME,
         "Com Port": "COM4",
@@ -94,7 +98,6 @@ def settingsGUI():
         core.quit()
 default_values = settingsGUI();
 
-
 # Debug function to check variables and whatever else we need
 def debug():
     print("="*50)
@@ -116,10 +119,16 @@ if len(sys.argv) == 2 and sys.argv[1] == 'debug':
 
 
 if default_values['Bluetooth'] == False:
-    ser = serial.Serial(default_values['Com Port'], 9600, write_timeout = 3)
-    input("") #Replace this with something that isn't stupid
-    ser.write(b'~ES')  
-          
+    
+    SerialHandler.connect_serial(default_values['Com Port'],baud)
+    SerialHandler.command_to_send(SerialHandler.establishConnection)    
+
+if default_values['Test']:
+    while SerialHandler.reading_serial:
+        if keyboard.read_key() == "d":
+            SerialHandler.command_to_send(SerialHandler.moveMotor)
+        if keyboard.read_key() == "x":
+            SerialHandler.reading_serial = False
 
 ##END OF CHANGES 
 
@@ -189,7 +198,9 @@ def show_fdbk(accuracy,sched_out,action,start_time,measured_refresh):
         if default_values['Bluetooth']: #if default_values about bluetoth is true
             os.system(ble_launch_string) #run the ble_send
         else: #otherwise use the com port connection to send T to te arduino script
-            ser.write(b'ID')        
+            #ser.write(b'ID')  
+            SerialHandler.command_to_send(SerialHandler.moveMotor)     
+
         #corr_sound.play()
         
         for frames in range(int(math.floor(1000/refresh))):
@@ -224,7 +235,8 @@ def show_fdbk(accuracy,sched_out,action,start_time,measured_refresh):
         if default_values['Bluetooth']:
             os.system(ble_launch_string)
         else:
-            ser.write(b'T')
+            #ser.write(b'T')
+            SerialHandler.command_to_send(SerialHandler.moveMotor)
         #corr_sound.play()
         for frames in range(int(math.floor(1000/refresh))):
             reward.draw()
@@ -234,7 +246,8 @@ def show_fdbk(accuracy,sched_out,action,start_time,measured_refresh):
         if default_values['Bluetooth']:
             pass
         else:
-            ser.write(b'F')   
+            #ser.write(b'F')   
+            print("Placeholder 3")
         return ('reward',fdbk_onset,fdbk_dur)
 
     elif accuracy == 999:

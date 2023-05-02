@@ -78,6 +78,7 @@ void ReadSerial () { // Generat a circular buffer to store incoming comamnds for
       if (SerialIncomingQueueFillAmt < SERIAL_INCOMING_BUFFER_SIZE) {
         // int SerialReadByte = Serial.read();
         // if (SerialReadByte ==XON)
+
         SerialIncomingQueue[SerialIncomingWritePointer] = Serial.read();
         // Serial.println(SerialIncomingQueue[SerialIncomingWritePointer], HEX); // For debug only
         // Increase count of what is in buffer

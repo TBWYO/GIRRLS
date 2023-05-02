@@ -2,6 +2,7 @@ import serial
 import time
 import threading
 import keyboard
+
 #Command Types
 TRANS_TYPE_COMMAND = 0x7E
 TRANS_TYPE_ACKNOWLEDGE = 0x40
@@ -32,13 +33,23 @@ CANDY_TAKEN_NOTED = 0x74
 
 #Hardware Events
 MOTOR_ROTATE = 0x44
-
 reading_serial = True
 
 establishConnection = [TRANS_TYPE_COMMAND,ESTABLISH_CONNECTION,ESTABLISH_CONNECTION_SERIAL]
 moveMotor = [TRANS_TYPE_COMMAND,DISPENSE_CANDY,MOTOR_ROTATE]
 
-ser = serial.Serial("COM4", 9600, xonxoff = True)
+
+
+def connect_serial(comport,baudrate):
+    global ser;
+    global reading_serial;
+    ser = serial.Serial(comport, baudrate, xonxoff = True)
+    time.sleep(3)
+    thread = threading.Thread(target=read_from_port)
+    thread.start()
+    print("Connected to serial")
+    reading_serial = True;
+    return ser, reading_serial;
 
 def command_to_send(command):
     #print("Running Command to Send")
@@ -46,8 +57,8 @@ def command_to_send(command):
     ser.write(command)
     return True;
 
-def read_from_port(serial):
-    #print("Read from port thread started")
+def read_from_port():
+    print("Read from port thread started")
     while reading_serial:
         if ser.in_waiting >= 3:
             bytes_read = ser.read(3)
@@ -61,14 +72,3 @@ def read_from_port(serial):
                 print("Candy Taken")
             else:
                 print(bytes_read)
-thread = threading.Thread(target=read_from_port,args=(ser,))
-thread.start()
-
-time.sleep(2)
-command_to_send(establishConnection)
-while reading_serial:
-    if keyboard.read_key() == "d":
-        command_to_send(moveMotor)
-    if keyboard.read_key() == "x":
-        reading_serial = False
-        
