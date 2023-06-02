@@ -26,18 +26,24 @@ import keyboard
 # Set variables for paths we will be using, as well as other useful default_valuesrmation
 CWD = os.getcwd()
 RESOURCE_PATH = (CWD + r"\Resources")
-DATA_PATH = (CWD+r"\Datapath")
+DATA_PATH = os.path.join(CWD, "Datapath")
 HOST_NAME = socket.gethostname()
 TEST_MONITOR = "testMonitor"
 # Control keys
 LEFT_KEY = '1'
 RIGHT_KEY = '4'
 QUIT_KEY = 'q'
-#Test Keys
+# Test Keys
 SIMULATE_CORRECT = "c"
 SIMULATE_INCORRECT = "v"
 START_MOTOR = "b"
 STOP_MOTOR = "n"
+# Timestamp Variables
+dispense_time = None
+taken_time = None
+# Creates the Datapath folder if it does not exist
+if not os.path.exists(DATA_PATH):
+    os.makedirs(DATA_PATH)
 
 # Variables from the original project, need to figure out what everything actually does
 num_disdaqs = 5 # Not sure what this is yet
@@ -275,7 +281,7 @@ def show_fix(duration,start_time,measured_refresh):
 ##Basics for the experiment.
 #Window.
 wintype='pyglet' 
-win = visual.Window([1920,1080], fullscr=default_values['FullScreen'],monitor=TEST_MONITOR, allowGUI = False, color = 'black', winType=wintype) #check window here
+win = visual.Window([1920,1080], fullscr=default_values['Fullscreen'],monitor=TEST_MONITOR, allowGUI = False, color = 'black', winType=wintype) #check window here
 
 #Object, response, fix, and instruction stims.
 instruct = visual.TextStim(win, text='Text', alignText = 'center', anchorHoriz = 'center', height = 0.12, wrapWidth = 350, color = 'white')
@@ -376,7 +382,17 @@ for i in range(20):
 
 #Shuffle bitmaps so images used as stims A, B, C, etc. vary across subjects.
 
-pic_list = [os.path.join(RESOURCE_PATH,'1.bmp'), os.path.join(RESOURCE_PATH,'2.bmp'), os.path.join(RESOURCE_PATH,'3.bmp'), os.path.join(RESOURCE_PATH,'4.bmp'), os.path.join(RESOURCE_PATH,'5.bmp'), os.path.join(RESOURCE_PATH,'6.bmp')]
+
+#pic_list = [os.path.join(RESOURCE_PATH,'1.bmp'), os.path.join(RESOURCE_PATH,'2.bmp'), os.path.join(RESOURCE_PATH,'3.bmp'), os.path.join(RESOURCE_PATH,'4.bmp'), os.path.join(RESOURCE_PATH,'5.bmp'), os.path.join(RESOURCE_PATH,'6.bmp')]
+pic_list = [
+    os.path.basename(os.path.join(RESOURCE_PATH, '1.bmp')),
+    os.path.basename(os.path.join(RESOURCE_PATH, '2.bmp')),
+    os.path.basename(os.path.join(RESOURCE_PATH, '3.bmp')),
+    os.path.basename(os.path.join(RESOURCE_PATH, '4.bmp')),
+    os.path.basename(os.path.join(RESOURCE_PATH, '5.bmp')),
+    os.path.basename(os.path.join(RESOURCE_PATH, '6.bmp'))
+]
+
 np.random.shuffle(pic_list) 
 
 stim_A = pic_list[0]

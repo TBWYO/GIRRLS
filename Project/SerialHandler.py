@@ -2,7 +2,7 @@ import serial
 import time
 import threading
 import keyboard
-
+import datetime
 #Command Types
 TRANS_TYPE_COMMAND = 0x7E
 TRANS_TYPE_ACKNOWLEDGE = 0x40
@@ -68,7 +68,11 @@ def read_from_port():
                 print("Motor Moved")
             elif bytes_read == b"%MC":
                 print("Candy Dispensed")
+                #dispense_time = datetime.datetime.now()
+                #return dispense_time
             elif bytes_read == b"%TR":
                 print("Candy Taken")
+                #taken_time = datetime.datetime.now()
+                #return taken_time
             else:
                 print(bytes_read)
