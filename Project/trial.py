@@ -65,6 +65,13 @@ b2 = '2'
 b3 = '3'
 b4 = '4'
 
+def closeApplication():
+    print("Closing application")
+    # Close the serial connection
+    SerialHandler.close_serial()
+    core.quit()
+
+
 def settingsGUI():
     print("Showing GUI")
     # Create a dictionary with default values for all the settings
@@ -101,7 +108,7 @@ def settingsGUI():
 
     else:
         print("User cancelled the dialog")
-        core.quit()
+        closeApplication()
 default_values = settingsGUI();
 
 # Debug function to check variables and whatever else we need
@@ -449,7 +456,7 @@ for i in range(len(inst_text)):
 
         elif resp == QUIT_KEY:
             #advance_sound.play()
-            core.quit()
+            closeApplication()
 
 #Run experimental trials.
 
@@ -532,7 +539,7 @@ for block in range(num_blocks):
             advance = 'true'
 
         elif k[0] == 'q':
-            core.quit()
+            closeApplication()
 
     #Disdaqs, start fMRI clock.
     fMRI_clock.reset() #fMRI_clock begins at start of disdaqs.
@@ -594,7 +601,7 @@ for block in range(num_blocks):
                 #advance_sound.play()
 
                 if resp == QUIT_KEY:
-                    core.quit()
+                    closeApplication()
 
                 elif resp == LEFT_KEY:
                     response = 'left'
@@ -672,7 +679,7 @@ for block in range(num_blocks):
                     allKeys = []
 
                 elif resp == QUIT_KEY:
-                    core.quit()
+                    closeApplication()
 
     #Update the block count.
 
@@ -708,7 +715,7 @@ for i in range(len(rate_text)):
 
             else:
                 #advance_sound.play()
-                core.quit()
+                closeApplication()
 
 #Valence instructions.
 
@@ -736,7 +743,7 @@ for i in range(len(valence_rate_inst)):
 
             else:
                 #advance_sound.play()
-                core.quit()
+                closeApplication()
 
 #Set-up file to collect ratings data.
 
@@ -890,7 +897,7 @@ for i in range(len(arousal_rate_inst)):
                 advance = 'true'
 
             else:
-                core.quit()
+                closeApplication()
 
 #Arousal ratings.
 

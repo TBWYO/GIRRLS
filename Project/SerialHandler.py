@@ -1,8 +1,8 @@
 import serial
 import time
 import threading
-import keyboard
 import datetime
+
 #Command Types
 TRANS_TYPE_COMMAND = 0x7E
 TRANS_TYPE_ACKNOWLEDGE = 0x40
@@ -43,6 +43,7 @@ moveMotor = [TRANS_TYPE_COMMAND,DISPENSE_CANDY,MOTOR_ROTATE]
 def connect_serial(comport,baudrate):
     global ser;
     global reading_serial;
+    global thread;
     ser = serial.Serial(comport, baudrate, xonxoff = True)
     time.sleep(3)
     thread = threading.Thread(target=read_from_port)
@@ -50,6 +51,17 @@ def connect_serial(comport,baudrate):
     print("Connected to serial")
     reading_serial = True;
     return ser, reading_serial;
+
+def close_serial():
+    global reading_serial;
+    # Join thread back in
+    print("Thread Join")
+    reading_serial = False; # Needs to happen before join
+    thread.join()
+    print("Serial Closing...")
+    ser.close()
+    print("Serial Closed")
+    return reading_serial;
 
 def command_to_send(command):
     #print("Running Command to Send")
